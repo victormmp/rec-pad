@@ -31,6 +31,30 @@ sim <- function(a,b){
   }
 }
 
+contorna <- function(pos,s,M) {
+  y <- pos[1,1]
+  x <- pos[1,2]
+  
+  rows <- s[1]
+  cols <- s[2]
+  
+  #circula a letra
+  seqx<-seq(x,x+cols-1,1)
+  seqy<-seq(y,y+rows-1,1)
+  M2<-M
+  for(x in seqx){
+    M2[y,x] = 1
+    M2[y+rows-1,x] = 1
+  }
+  x = pos[1,2]
+  for(y in seqy){
+    M2[y,x] = 1
+    M2[y,x+cols-1] = 1
+  }
+  
+  par(new=TRUE)
+  image(rotate(M2))
+}
 
 kl <- readJPEG('./K.JPG')
 K <- as.matrix(kl[,,3])
@@ -129,7 +153,30 @@ x_s = pos_s[1,2]
 m <- Letter[y:(y+krow-1), x:(x+kcol-1)]
 m_s <- Letter[y_s:(y_s+srow-1), x_s:(x_s+scol-1)]
 
-image(rotate(m_s))
-#image(rotate(Letter))
+#image(rotate(m_s))
+image(rotate(Letter))
+
+par(new=TRUE)
+contorna(pos,kdim,Letter)
+par(new=TRUE)
+contorna(pos_s,sdim,Letter)
+
+# #circula a letra
+# seqx<-seq(x,x+32-1,1)
+# seqy<-seq(y,y+43-1,1)
+# M2<-Letter
+# for(i in seqx){
+#   M2[y,i] <- 1
+#   M2[y+43-1,i] <- 1
+# }
+# x = pos[1,2]
+# for(j in seqy){
+#   M2[j,x] <- 1
+#   M2[j,x+32-1] <- 1
+# }
+
+image(rotate(Letter))
+par(new=TRUE)
+image(rotate(M2))
 
 print("=== Ended routine ===")
