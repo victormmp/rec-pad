@@ -10,12 +10,51 @@ library('jpeg')
 library('plot3D')
 library('rgl')
 
+# ======= Functions =======
+
 rotate <- function(x) t(apply(x,2,rev))
 
 
 features <- function(x){
   d <- 1*as.vector(x)
-  return (d)
+  
+  m <- mean(x)
+  t <- sum(x)
+  s <- sd(x)
+  
+  co <- c(0,0,0,0)
+  
+  for (i in x){
+    if (i < 0.2) co[1] <- co[1] + 1
+    else if (i < 0.4) co[2] <- co[2] + 1
+    else if (i < 0.6) co[3] <- co[3] + 1
+    else co[4] <- co[4] + 1
+  }
+  
+  co_m <- mean(co)
+  co_t <- sum(co)
+  co_s <- sd(co)
+  
+  zero_b <- 0
+  while(x[zero_b+1] < 0.1) {
+    zero_b <- zero_b + 1
+  }
+  
+  zero_a <- 1
+  while (x[length(x)-zero_a] < 0.1) {
+    zero_a <- zero_a + 1
+  }
+  
+  return (c(m,t,s,co,co_m,co_t,co_s,zero_a,zero_b))
+}
+
+features2 <- function(x) {
+  d <- as.vector(x)
+  size <- length(x)
+  w <- seq(1,size,1)
+  
+  return (sum(w*x))
+  
 }
 
 
@@ -31,6 +70,11 @@ sim <- function(a,b){
   }
 }
 
+sim2 <- function(a,b) {
+  
+}
+
+
 contorna <- function(pos,s,M) {
   y <- pos[1,1]
   x <- pos[1,2]
@@ -38,15 +82,17 @@ contorna <- function(pos,s,M) {
   rows <- s[1]
   cols <- s[2]
   
-  #circula a letra
   seqx<-seq(x,x+cols-1,1)
   seqy<-seq(y,y+rows-1,1)
   M2<-M
+  
   for(x in seqx){
     M2[y,x] = 1
     M2[y+rows-1,x] = 1
   }
+  
   x = pos[1,2]
+  
   for(y in seqy){
     M2[y,x] = 1
     M2[y,x+cols-1] = 1
@@ -55,6 +101,8 @@ contorna <- function(pos,s,M) {
   par(new=TRUE)
   image(rotate(M2))
 }
+
+# ======== Routine ========
 
 kl <- readJPEG('./K.JPG')
 K <- as.matrix(kl[,,3])
@@ -137,7 +185,7 @@ seqxMM <- seq(1,nrow(MM),1)
 seqyMM <- seq(1,ncol(MM),1)
 
 persp3D(seqxMM,seqyMM,MM)
-#contour(seqxMM,seqyMM,MM)
+# contour(seqxMM,seqyMM,MM)
 
 pos <- which(Mcorr == min(Mcorr), arr.ind = TRUE)
 pos_s <- which(Mcorr_s == min(Mcorr_s), arr.ind = TRUE)
@@ -161,22 +209,5 @@ contorna(pos,kdim,Letter)
 par(new=TRUE)
 contorna(pos_s,sdim,Letter)
 
-# #circula a letra
-# seqx<-seq(x,x+32-1,1)
-# seqy<-seq(y,y+43-1,1)
-# M2<-Letter
-# for(i in seqx){
-#   M2[y,i] <- 1
-#   M2[y+43-1,i] <- 1
-# }
-# x = pos[1,2]
-# for(j in seqy){
-#   M2[j,x] <- 1
-#   M2[j,x+32-1] <- 1
-# }
-
-image(rotate(Letter))
-par(new=TRUE)
-image(rotate(M2))
 
 print("=== Ended routine ===")
