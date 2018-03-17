@@ -22,13 +22,26 @@ features <- function(x){
   t <- sum(x)
   s <- sd(x)
   
-  co <- c(0,0,0,0)
+  co <- array(0,10)
   
-  for (i in x){
-    if (i < 0.2) co[1] <- co[1] + 1
-    else if (i < 0.4) co[2] <- co[2] + 1
-    else if (i < 0.6) co[3] <- co[3] + 1
-    else co[4] <- co[4] + 1
+  # for (i in x){
+  #   for (j in seq(2,10,2)) {
+  #     if (i > j/10) co[j] <- co[j] + 1
+  #     break
+  #   }
+  # }
+  
+  for (i in x) {
+    if (i < 0.1) co[1] <- co[1] + 1
+    else if (i < 0.2) co[2] < co[2] + 1
+    else if (i < 0.3) co[3] < co[3] + 1
+    else if (i < 0.4) co[4] < co[4] + 1
+    else if (i < 0.5) co[5] < co[5] + 1
+    else if (i < 0.6) co[6] < co[6] + 1
+    else if (i < 0.7) co[7] < co[7] + 1
+    else if (i < 0.8) co[8] < co[8] + 1
+    else if (i < 0.9) co[9] < co[9] + 1
+    else if (i < 1) co[10] < co[10] + 1
   }
   
   co_m <- mean(co)
@@ -142,6 +155,8 @@ Mcorr <- matrix(nrow = numRow, ncol = numCol)
 
 print("Loaded Images. Starting to create the correlate for K.")
 
+count <- 0
+
 for (x in seqCol) {
   for(y in seqRow) {
     m <- Letter[y:(y+krow-1),x:(x+kcol-1)]
@@ -150,6 +165,10 @@ for (x in seqCol) {
     Mcorr[y,x] <- sim(fK,fm)
     #Mcorr[y,x] <- sum(as.integer(xor(K,m)))
     #print(x)
+    
+    # print(c("Calculando para matrix: ", count))
+    # count <- count + 1 
+    
   }
 }
 
