@@ -9,47 +9,56 @@ setwd(this.dir)
 library('jpeg')
 library('plot3D')
 library('rgl')
+library('tictoc')
+
+tic("Total Time")
+
 
 # ======= Functions =======
 
 rotate <- function(x) t(apply(x,2,rev))
 
+contaCor <- function(x) {
+  
+  x <- as.integer(x)
+  
+  co <- array(0,10)
+  
+  for (i in x) {
+    if (i < 0.1) co[1] <- co[1] + 1
+    else if (i < 0.2) co[2] <- co[2] + 1
+    else if (i < 0.3) co[3] <- co[3] + 1
+    else if (i < 0.4) co[4] <- co[4] + 1
+    else if (i < 0.5) co[5] <- co[5] + 1
+    else if (i < 0.6) co[6] <- co[6] + 1
+    else if (i < 0.7) co[7] <- co[7] + 1
+    else if (i < 0.8) co[8] <- co[8] + 1
+    else if (i < 0.9) co[9] <- co[9] + 1
+    else if (i < 1) co[10] <- co[10] + 1
+  }
+  return(co)
+}
+
 
 features <- function(x){
+  
+  rows <- dim(x)[2]
+  cols <- dim(x)[1]
+  
   d <- 1*as.vector(x)
   
   m <- mean(x)
   t <- sum(x)
   s <- sd(x)
   
-  co <- array(0,10)
-  
-  # for (i in x){
-  #   for (j in seq(2,10,2)) {
-  #     if (i > j/10) co[j] <- co[j] + 1
-  #     break
-  #   }
-  # }
-  
-  for (i in x) {
-    if (i < 0.1) co[1] <- co[1] + 1
-    else if (i < 0.2) co[2] < co[2] + 1
-    else if (i < 0.3) co[3] < co[3] + 1
-    else if (i < 0.4) co[4] < co[4] + 1
-    else if (i < 0.5) co[5] < co[5] + 1
-    else if (i < 0.6) co[6] < co[6] + 1
-    else if (i < 0.7) co[7] < co[7] + 1
-    else if (i < 0.8) co[8] < co[8] + 1
-    else if (i < 0.9) co[9] < co[9] + 1
-    else if (i < 1) co[10] < co[10] + 1
-  }
+  co <- contaCor(x)
   
   co_m <- mean(co)
   co_t <- sum(co)
   co_s <- sd(co)
   
   zero_b <- 0
-  while(x[zero_b+1] < 0.1) {
+  while(x[zero_b+1] < 0.3) {
     zero_b <- zero_b + 1
   }
   
@@ -58,7 +67,26 @@ features <- function(x){
     zero_a <- zero_a + 1
   }
   
-  return (c(m,t,s,co,co_m,co_t,co_s,zero_a,zero_b))
+  ter_r <- matrix(array(0,30), nrow=3, ncol=10)
+  
+  ter_r[1,] <- contaCor(x[,1:as.integer(rows/3)])
+  ter_r[2,] <- contaCor(x[,as.integer(rows/3 + 1):as.integer(2*rows/3)])
+  ter_r[2,] <- contaCor(x[,as.integer(2*rows/3 + 1):rows])
+  
+  ter_c <- matrix(array(0,3), nrow=3, ncol=10)
+  
+  ter_c[1,] <- contaCor(x[1:as.integer(cols/3),])
+  ter_c[2,] <- contaCor(x[as.integer(cols/3 + 1):as.integer(2*cols/3),])
+  ter_c[2,] <- contaCor(x[as.integer(2*cols/3 + 1):cols,])
+  
+  ter <- c()
+  
+  for (i in seq(3)) {
+    ter <- c(ter,as.array(ter_c[i,]),as.array(ter_r[i,]))
+  }
+  
+  
+  return (c(m,t,s,co,co_m,co_t,co_s,zero_a,zero_b,ter))
 }
 
 features2 <- function(x) {
@@ -117,6 +145,8 @@ contorna <- function(pos,s,M) {
 
 # ======== Routine ========
 
+tic("Loading Images")
+
 kl <- readJPEG('./K.JPG')
 K <- as.matrix(kl[,,3])
 #K <- (K<0.75)
@@ -130,6 +160,10 @@ Letter <- as.matrix(Letterl[,,3])
 #Letter <- (Letter<0.75)
 
 #image(rotate(K))
+
+toc()
+print("Calculating correlation for K")
+tic("Time: ")
 
 kdim <- dim(K)
 krow <- kdim[1]
@@ -153,8 +187,6 @@ seqCol <- seq(1,numCol,1)
 
 Mcorr <- matrix(nrow = numRow, ncol = numCol)
 
-print("Loaded Images. Starting to create the correlate for K.")
-
 count <- 0
 
 for (x in seqCol) {
@@ -172,6 +204,10 @@ for (x in seqCol) {
   }
 }
 
+toc()
+print("Calculating correlation for S")
+tic("Time: ")
+
 # Para S
 
 numRow <- lrow - srow
@@ -184,8 +220,6 @@ seqCol <- seq(1,numCol,1)
 
 Mcorr_s <- matrix(nrow = numRow, ncol = numCol)
 
-print("Correlate matrice for K created. Starting to create correlate for S.")
-
 for (x in seqCol) {
   for(y in seqRow) {
     m_s <- Letter[y:(y+srow-1),x:(x+scol-1)]
@@ -197,13 +231,15 @@ for (x in seqCol) {
   }
 }
 
-print("Correlate for S created. Starting to identify the letters positions.")
+toc()
+print("Finding letters")
+tic("Time: ")
 
 MM <- rotate(Mcorr)
 seqxMM <- seq(1,nrow(MM),1)
 seqyMM <- seq(1,ncol(MM),1)
 
-persp3D(seqxMM,seqyMM,MM)
+# persp3D(seqxMM,seqyMM,MM)
 # contour(seqxMM,seqyMM,MM)
 
 pos <- which(Mcorr == min(Mcorr), arr.ind = TRUE)
@@ -215,18 +251,21 @@ x = pos[1,2]
 y_s = pos_s[1,1]
 x_s = pos_s[1,2]
 
+toc()
+
 #plot3D(Mcorr)
 
 m <- Letter[y:(y+krow-1), x:(x+kcol-1)]
 m_s <- Letter[y_s:(y_s+srow-1), x_s:(x_s+scol-1)]
 
 #image(rotate(m_s))
-image(rotate(Letter))
+# image(rotate(Letter))
 
-par(new=TRUE)
+
 contorna(pos,kdim,Letter)
-par(new=TRUE)
+
 contorna(pos_s,sdim,Letter)
 
+toc()
 
 print("=== Ended routine ===")
