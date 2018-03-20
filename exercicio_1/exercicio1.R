@@ -20,7 +20,7 @@ rotate <- function(x) t(apply(x,2,rev))
 
 contaCor <- function(x) {
   
-  x <- as.integer(x)
+  x <- as.array(x)
   
   co <- array(0,10)
   
