@@ -49,13 +49,31 @@ sim <- function(a,b){
   }
 }
 
+features <- function(x){
+  m <- mean(x)
+  t <- sum(x)
+  s <- sd(x)
+  return(c(m,t,s))
+}
+
 #=============================================
 
 ft <- c()
+xtf <- c()
+xef <- c()
+
+for (i in seq(25)){
+  xtf <- c(xtf, features(xt))
+  xef <- c(xef, features(xe))
+}
+
+xtf <- matrix(xtf,nrow=25)
+xef <- matrix(xef,nrow=25)
+
 
 for (i in seq(25)) {
   for (j in seq(25)){
-    ft <- c(ft,sim(xt[i,],xe[j,]))
+    ft <- c(ft,sim(xtf[i,],xef[j,]))
   }
 }
 
