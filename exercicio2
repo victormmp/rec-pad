@@ -1,0 +1,71 @@
+rm(list=ls())
+graphics.off()
+
+this.dir <- dirname(parent.frame(2)$ofile)
+setwd(this.dir)
+
+require(grDevices)
+library('jpeg')
+library('bmp')
+library('pixmap')
+# library('rgl')
+
+rotate <- function(x) t(apply(x, 2, rev))
+
+#Leitura de dados ###################################################################################
+xt <- c();
+xe <- c();
+
+for(i in 1:5){
+  
+  for(j in 1:5){
+    
+    path_xt <- paste(getwd(), paste(paste("/faces/f", i, sep=""), paste(paste("teste",j, sep=""),".bmp", sep=""), sep="") ,sep="");
+    path_xe <- paste(getwd(), paste(paste("/faces/F", i, sep=""), paste(paste("TESTE",j,sep=""),"R.BMP",sep=""),sep=""),sep="");
+    
+    img_train <- read.bmp(path_xt);
+    img_test <- read.bmp(path_xe);
+    
+    xt <- rbind(xt, t(as.matrix(as.vector(img_train))))
+    xe <- rbind(xe, t(as.matrix(as.vector(img_test))))
+    
+  }
+  
+}
+
+yt <- matrix(seq(1,5,1), ncol=1, nrow=25);#yt = [1,2,3,4,5,1,2,3,4...];
+ye <- matrix(seq(1,5,1), ncol=1, nrow=25);
+
+
+sim <- function(a,b){
+  if (length(a) == length(b)){
+    size <- length(a)[1]
+    ed <- 0
+    for (i in seq(size)){
+      ed <- ed + (a[i]-b[i])**2
+    }
+    ed<- sqrt(ed)
+    return (ed)
+  }
+}
+
+#=============================================
+
+ft <- c()
+
+for (i in seq(25)) {
+  for (j in seq(25)){
+    ft <- c(ft,sim(xt[i,],xe[j,]))
+  }
+}
+
+ft <- matrix(ft,nrow=25,ncol=25)
+
+fr <- c()
+
+for(i in seq(25)){
+  for(j in seq(1,21,5)){
+    fr[i] <-  which(ft[j:(j+4),i] == min(ft[j:(j+4),i]), arr.ind = TRUE)
+  }
+}
+
