@@ -49,11 +49,74 @@ sim <- function(a,b){
   }
 }
 
-features <- function(x){
+contaCor <- function(x) {
+  
+  x <- as.array(x)
+  
+  co <- array(0,10)
+  
+  for (i in x) {
+    if (i < 10) co[1] <- co[1] + 1
+    else if (i < 20) co[2] <- co[2] + 1
+    else if (i < 30) co[3] <- co[3] + 1
+    else if (i < 40) co[4] <- co[4] + 1
+    else if (i < 50) co[5] <- co[5] + 1
+    else if (i < 60) co[6] <- co[6] + 1
+    else if (i < 70) co[7] <- co[7] + 1
+    else if (i < 80) co[8] <- co[8] + 1
+    else if (i < 90) co[9] <- co[9] + 1
+    else if (i < 100) co[10] <- co[10] + 1
+  }
+  return(co)
+}
+
+features1 <- function(x){
   m <- mean(x)
   t <- sum(x)
   s <- sd(x)
-  return(c(m,t,s))
+  
+  co <- contaCor(x)
+  
+  
+  return(c(m,t,s,co))
+}
+
+features2 <- function(x) {
+  d <- matrix(x, nrow=56)
+  v1 <- d[1:as.integer(dim(d)[1]/2),]
+  v2 <- d[as.integer(dim(d)[1]/2 +1):dim(d)[1],]
+  
+  v2 <- as.vector(v2)
+  v1 <- as.vector(v1)
+  
+  f <- sim(v1,v2)
+  m <- mean(x)
+  t <- sum(x)
+  s <- sd(x)
+  
+  return(c(f,m,t,s))
+}
+
+features3 <- function(x) {
+  d <- matrix(x, nrow=56)
+  v1 <- d[1:as.integer(dim(d)[1]/2),]
+  v2 <- d[as.integer(dim(d)[1]/2 +1):dim(d)[1],]
+  v3 <- d[,1:as.integer(dim(d)[2]/2)]
+  v4 <- d[,as.integer(dim(d)[2]/2 +1):dim(d)[2]]
+  
+  v4 <- as.vector(v4)
+  v3 <- as.vector(v3)
+  v2 <- as.vector(v2)
+  v1 <- as.vector(v1)
+  
+  f1 <- sim(v1,v2)
+  f2 <- sim(v3,v4)
+  f3 <- sim(v1,v3)
+  f4 <- sim(v2,v4)
+  f5 <- sim(v1,v4)
+  f6 <- sim(v2,v3)
+  
+  return(c(f1,f2,f3,f4,f5,f6))
 }
 
 #=============================================
@@ -63,12 +126,13 @@ xtf <- c()
 xef <- c()
 
 for (i in seq(25)){
-  xtf <- c(xtf, features(xt))
-  xef <- c(xef, features(xe))
+  xtf <- c(xtf, features3(xt[i,]))
+  xef <- c(xef, features3(xe[i,]))
 }
 
 xtf <- matrix(xtf,nrow=25)
 xef <- matrix(xef,nrow=25)
+
 
 
 for (i in seq(25)) {
@@ -79,11 +143,25 @@ for (i in seq(25)) {
 
 ft <- matrix(ft,nrow=25,ncol=25)
 
-fr <- c()
+fr <- matrix(nrow=25,ncol=5)
 
 for(i in seq(25)){
+  k<-1
   for(j in seq(1,21,5)){
-    fr[i] <-  which(ft[j:(j+4),i] == min(ft[j:(j+4),i]), arr.ind = TRUE)
+    fr[i,k] <-  which(ft[j:(j+4),i] == min(ft[j:(j+4),i]), arr.ind = TRUE)
+    k <- k+1
   }
 }
+ 
 
+yvec <- ye
+
+for (i in seq(4)) {
+  yvec <- cbind(yvec,ye)
+}
+
+# feat <- matrix(nrow=50, ncol=3)
+# 
+# for (i in seq(50)) {
+#   feat <- c(mean(features(xt[])))
+# }
