@@ -174,7 +174,7 @@ features4 <- function(x) {
 }
 
 sim2 <- function(a, b) {
-    return(mean(a)-mean(b))
+    return(abs(sum(a)-sum(b)))
 }
 
 
