@@ -107,8 +107,8 @@ features1 <- function(x) {
 
 features2 <- function(x) {
     d <- matrix(x, nrow = 56)
-    v1 <- d[1:as.integer(dim(d)[1] / 2), ]
-    v2 <- d[as.integer(dim(d)[1] / 2 + 1):dim(d)[1], ]
+    v1 <- d[1:as.integer(dim(d)[1] / 2),]
+    v2 <- d[as.integer(dim(d)[1] / 2 + 1):dim(d)[1],]
     
     v2 <- as.vector(v2)
     v1 <- as.vector(v1)
@@ -123,8 +123,8 @@ features2 <- function(x) {
 
 features3 <- function(x) {
     d <- matrix(x, nrow = 56)
-    v1 <- d[1:as.integer(dim(d)[1] / 2), ]
-    v2 <- d[as.integer(dim(d)[1] / 2 + 1):dim(d)[1], ]
+    v1 <- d[1:as.integer(dim(d)[1] / 2),]
+    v2 <- d[as.integer(dim(d)[1] / 2 + 1):dim(d)[1],]
     v3 <- d[, 1:as.integer(dim(d)[2] / 2)]
     v4 <- d[, as.integer(dim(d)[2] / 2 + 1):dim(d)[2]]
     
@@ -143,6 +143,40 @@ features3 <- function(x) {
     return(c(f1, f2, f3, f4, f5, f6))
 }
 
+features4 <- function(x) {
+    d <- matrix(x, nrow = 56)
+    v1 <- d[1:as.integer(dim(d)[1] / 2),]
+    v2 <- d[as.integer(dim(d)[1] / 2 + 1):dim(d)[1],]
+    v3 <- d[, 1:as.integer(dim(d)[2] / 2)]
+    v4 <- d[, as.integer(dim(d)[2] / 2 + 1):dim(d)[2]]
+    
+    v4 <- as.vector(v4)
+    v3 <- as.vector(v3)
+    v2 <- as.vector(v2)
+    v1 <- as.vector(v1)
+    
+    f1 <- sim(v1, v2)
+    f2 <- sim(v3, v4)
+    f3 <- sim(v1, v3)
+    f4 <- sim(v2, v4)
+    f5 <- sim(v1, v4)
+    f6 <- sim(v2, v3)
+    
+    m <- mean(x)
+    t <- sum(x)
+    s <- sd(x)
+    
+    mf <- mean(c(f1, f2, f3, f4, f5, f6))
+    tf <- sum(c(f1, f2, f3, f4, f5, f6))
+    sf <- sd(c(f1, f2, f3, f4, f5, f6))
+    
+    return(c(f1, f2, f3, f4, f5, f6, m, t, s, mf, tf, sf))
+}
+
+sim2 <- function(a, b) {
+    return(mean(a)-mean(b))
+}
+
 
 #=============================================
 
@@ -152,15 +186,15 @@ xef <- c()
 
 # Criando os vetores de feature para cada imagem dos conjuntos
 for (i in seq(25)) {
-    xtf <- rbind(xtf, t(as.matrix(features3(xt[i, ]))))
-    xef <- rbind(xef, t(as.matrix(features3(xe[i, ]))))
+    xtf <- rbind(xtf, t(as.matrix(features3(xt[i,]))))
+    xef <- rbind(xef, t(as.matrix(features3(xe[i,]))))
 }
 
 # Inicia a comparação entre as imagens. Compara uma imagem de treinamento em xtf com uma
 # imagem de teste em xef
 for (i in seq(25)) {
     for (j in seq(25)) {
-        ft <- c(ft, sim(xtf[i, ], xef[j, ]))
+        ft <- c(ft, sim(xtf[i,], xef[j,]))
     }
 }
 
@@ -190,5 +224,6 @@ for (i in seq(5)) {
 }
 
 
-print(c("Acertos: ", acertos))
-print(c("Acertos em %:", acertos / (25 * 5) * 100))
+cat(c('Acertos: ', acertos))
+cat("\n")
+cat(c('Acertos em %:', acertos / (25 * 5) * 100, '%'))
