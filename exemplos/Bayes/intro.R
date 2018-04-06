@@ -12,6 +12,12 @@ fnormal1var <- function(x,m,r) {
   return(y)
 }
 
+pcond2var <- function(x1,x2,m1,m2,r1,r2) {
+  y <- (1/(sqrt(2*pi*r1*r1*r2*r2)))*exp(-(0.5*((x1-m1)/(r1))**2 + 0.5*((x2-m2)/(r2))**2))
+  
+  return(y)
+}
+
 
 # Número de Parâmetros
 par <- 2
@@ -41,6 +47,7 @@ sd11 <- sd(xc1[,1])
 
 m12 <- mean(xc1[,2])
 sd12 <- sd(xc1[,2])
+
 
 m21 <- mean(xc2[,1])
 sd21 <- sd(xc2[,1])
@@ -77,7 +84,32 @@ y3d2 <- y21range %*% t(y22range)
 persp3d(xrange,xrange,y3d1,col='red')
 persp3d(xrange,xrange,y3d2,col='blue',add=TRUE)
 
+# P(x|C1)
+px1c1 <- pcond2var(xc1[,1],xc1[,2],m11,m12,sd11,sd12)
+px2c1 <- pcond2var(xc2[,1],xc2[,2],m21,m22,sd21,sd22)
 
+# P(x|C2)
+px1c2 <- pcond2var(xc1[,1],xc1[,2],m11,m12,sd11,sd12)
+px2c2 <- pcond2var(xc2[,1],xc2[,2],m21,m22,sd21,sd22)
+
+pxc2 <- px1c1 %*% t(px1c2)
+pxc1 <- px2c1 %*% t(px2c2)
+
+# P(C1)
+pc1 <- dim(xc1)[1]/(dim(xc1)[1] + dim(xc2)[1])
+pc2 <- dim(xc2)[1]/(dim(xc1)[1] + dim(xc2)[1])
+
+# Classificador
+
+yclass <- matrix(0, nrow = length(xrange), ncol = length(xrange))
+
+for (i in xrange) {
+  for (j in xrange) {
+    yclass[i,j] <- 0.05 * (pxc1[i,j]/pxc2[i,j] >= pc2/pc1)
+  }
+}
+
+persp3d(xrange,xrange,yclass,col='green',add=TRUE)
 
 
 
