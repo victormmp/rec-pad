@@ -18,8 +18,8 @@ myknn <- function(X, Y, k, xt) {
 
 k <- 3
 N12 <- 50 # sempre par
-xc1 <- matrix(rnorm(N12 * 2, mean = 2, sd = 0.8), ncol = 2)
-xc2 <- matrix(rnorm(N12 * 2, mean = 4, sd = 0.8), ncol = 2)
+xc1 <- matrix(rnorm(N12 * 2, mean = 2, sd = 1), ncol = 2)
+xc2 <- matrix(rnorm(N12 * 2, mean = 4, sd = 1), ncol = 2)
 
 X <- rbind(xc1, xc2)
 Y <- rbind(-1 * matrix(1, nrow = N12, ncol = 1), matrix(1, nrow = N12, ncol = 1))
@@ -46,6 +46,8 @@ for (i in xyseq) {
     }
 }
 
+persp3d(xyseq, xyseq, M,col='red')
 persp3D(xyseq, xyseq, M)
 scatter3D(xc1[, 1], xc1[, 2], matrix(0, nrow = N12, ncol = 1), add = T)
 scatter3D(xc2[, 1],  xc2[, 2],  matrix(0, nrow = N12, ncol = 1), add = T, col = 'red')
+
