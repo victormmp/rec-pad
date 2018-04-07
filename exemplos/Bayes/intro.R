@@ -112,6 +112,9 @@ pc1 <- dim(xc1)[1]/(dim(xc1)[1] + dim(xc2)[1])
 pc2 <- dim(xc2)[1]/(dim(xc1)[1] + dim(xc2)[1])
 
 # Classificador
+# 
+# Classe(x) = C1 se P(x|C1)/P(x|C2) > P(C2)/P(C1)
+#           = C2 caso contrário
 
 yclass <- matrix(1, nrow = length(xrange), ncol = length(xrange))
 
