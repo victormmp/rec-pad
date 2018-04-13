@@ -1,5 +1,7 @@
 rm(list=ls())
 
+rm(list=ls())
+
 # install.packages("plot3D")
 # install.packages("rgl")
 library("plot3D")
@@ -41,7 +43,7 @@ N <- 60
 xc1 <- matrix(rnorm(N*par, mean=3,sd=0.5),ncol=par)
 xc2 <- matrix(rnorm(N*par, mean=7,sd=1),ncol=par)
 
-# Corelacao
+# Correlacao
 p1 <- cor(xc1[,1],xc1[,2])
 p2 <- cor(xc2[,1],xc2[,2])
 
@@ -103,8 +105,8 @@ y3d2 <- y21range %*% t(y22range)
 # ribbon3D(xrange,xrange,y3d1)
 # ribbon3D(xrange,xrange,y3d2,add=TRUE)
 
-persp3d(xrange,xrange,y3d1,col='red')
-persp3d(xrange,xrange,y3d2,col='blue',add=TRUE)
+persp3D(xrange,xrange,y3d1,col='red')
+persp3D(xrange,xrange,y3d2,col='blue',add=TRUE)
 
 # ========== CALCULO DO CLASSIFICADOR BINARIO DE BAYES
 #
@@ -139,9 +141,6 @@ pc1 <- dim(xc1)[1]/(dim(xc1)[1] + dim(xc2)[1])
 # P(C2)
 pc2 <- dim(xc2)[1]/(dim(xc1)[1] + dim(xc2)[1])
 
-# pxc1 <- y3d1
-# pxc2 <- y3d2
-
 # Classificador
 # 
 # Classe(x) = C1 se P(x|C1)/P(x|C2) > P(C2)/P(C1)
@@ -156,4 +155,4 @@ for (i in seq(length(xrange))) {
 }
 
 # Incluindo o separador no plot 3d das pdfs das distribuicoes
-persp3d(xrange,xrange,yclass,col='green',add=TRUE)
+persp3D(xrange,xrange,yclass,col='green',add=TRUE)

@@ -1,0 +1,226 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage{multirow}
+%\usepackage{hyperref}
+\usepackage[table,xcdraw]{xcolor}
+%\usepackage{caption}
+%\usepackage{subcaption}
+%\usepackege[nogin]{sweave}
+
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\begin{center}
+{\huge Gaussiana no Espaço $R^2$}
+
+{\large Victor Marcius Magalhães Pinto}
+\end{center}
+
+\section{Descrição da Tarefa}
+
+Considere duas distribuições normais no espaço $R^2$, ou seja, duas distribuições com duas variáveis cada (Ex.: x e y). As distribuições são caracterizadas como $N({2,2}\sigma^2)$ e $N({4,4}\sigma^2)$. Pede-se para gerar os dados em plano 2D e estimar a densidade apresentando o gráfico da densidade de probabilidade para as duas distribuições considerando o coeficiente de correlação nulo. Em seguida obter gráficos para uma nova função de densidade de probabilidade com média (3,3) e desvios padrão unitários, para variados valores de correlação. Considerar a função de cálculo da densidade de probabilidade:
+
+
+\begin{equation}\label{equation 1}
+\frac{1}{2 \pi s_1 s_2 \sqrt{1-p^2}} \exp({-\frac{1}{2(1-p^2)}\left(\frac{(x - \mu_1)^2}{s^2_1}+ \frac{(y - \mu_2)^2}{s_2^2}-\frac{2p(x-\mu_1)(y-\mu_2)}{s_1s_2}\right)})
+\end{equation}
+
+\section{Algoritmo}
+
+Para a resolução do problema, foi montado um algoritmo baseado em teorema de Bayes, assim como o classificador de Bayes, conforme visto em sala de aula. 
+
+<<echo=F>>=
+rm(list=ls())
+
+# install.packages("plot3D")
+# install.packages("rgl")
+library("plot3D")
+library("rgl")
+
+# this.dir <- dirname(parent.frame(2)$ofile)
+# setwd(this.dir)
+@
+
+Primeiramente definimos as funções responsáveis por calcular as densidades de probabilidade para cada uma das variáveis dos parâmetros das classes, da forma:
+
+<<echo=T>>=
+
+fnormal1var <- function(x,m,r) {
+  y <- (1/(sqrt(2*pi*r*r)))*exp(-0.5*((x-m)/(r))**2)
+  
+  return(y)
+}
+
+@
+
+A equação \ref{equation 1} pode ser definida da forma:
+
+{\tiny
+<<echo=T>>=
+pcond2varcorr <- function(x1,x2,m1,m2,r1,r2,p) {
+  y <- (1/((2*pi*r1*r2))*sqrt(1-p**2))*exp(-(1/(2*(1-p**2)))*(((x1-m1)/(r1))**2 + ((x2-m2)/(r2))**2 - ((2*p*(x1-m1)*(x2-m2))/(r1*r2))))
+  
+  return(y)
+}
+@
+
+}
+Para amostras conforme é pedido pelo enunciado, da forma:
+
+<<echo=T>>=
+# Numero de Parametros
+par <- 2
+# Numero de Amostras
+N <- 60
+
+
+
+xc1 <- matrix(rnorm(N*par, mean=2,sd=0.5),ncol=par)
+xc2 <- matrix(rnorm(N*par, mean=4,sd=0.5),ncol=par)
+
+# Correlacao
+p1 <- cor(xc1[,1],xc1[,2])
+p2 <- cor(xc2[,1],xc2[,2])
+@
+
+
+\noindent
+as mesmas podem ser representadas no plano da forma:
+
+\begin{figure}[H]
+\centering
+<<echo=F,fig=T>>=
+
+limites <- c(0,6)
+
+plot(xc1[,1],xc1[,2],xlim=limites,ylim=limites, col='red',xlab="Parametro 1 da classe",ylab="Parametro 2 da classe")
+par(new=T)
+plot(xc2[,1],xc2[,2],xlim=limites,ylim=limites, col='blue',xlab="",ylab="")
+par(new=T)
+plot(xc1[,1],matrix(0,nrow=length(xc1[,1]),ncol=1),xlim=limites,ylim=limites, col='red',xlab="",ylab="")
+par(new=T)
+plot(xc2[,1],matrix(0,nrow=length(xc2[,1]),ncol=1),xlim=limites,ylim=limites, col='blue',xlab="",ylab="")
+par(new=T)
+plot(matrix(0,nrow=length(xc1[,2]),ncol=1),xc1[,1],xlim=limites,ylim=limites, col='red',xlab="",ylab="")
+par(new=T)
+plot(matrix(0,nrow=length(xc2[,2]),ncol=1),xc2[,1],xlim=limites,ylim=limites, col='blue',xlab="",ylab="")
+
+# Media e desvio padrao da primeira feature da classe 1
+m11 <- mean(xc1[,1])
+sd11 <- sd(xc1[,1])
+
+# Media e desvio padrao da segunda feature da classe 1
+m12 <- mean(xc1[,2])
+sd12 <- sd(xc1[,2])
+
+# Media e desvio padrao da primeira feature da classe 2
+m21 <- mean(xc2[,1])
+sd21 <- sd(xc2[,1])
+
+# Media e desvio padrao da segunda feature da classe 2
+m22 <- mean(xc2[,2])
+sd22 <- sd(xc2[,2])
+
+# ========== ESTIMANDO AS PDFs MARGINAIS 
+
+xrange <- seq(0,10,0.1)
+y11range <- fnormal1var(xrange,m11,sd11)
+y12range <- fnormal1var(xrange,m12,sd12)
+y21range <- as.matrix(fnormal1var(xrange,m21,sd21))
+y22range <- as.matrix(fnormal1var(xrange,m22,sd22))
+
+par(new=T)
+plot(xrange,y11range,xlim=limites,ylim=limites, col='red',type='l',xlab="",ylab="")
+par(new=T)
+plot(xrange,y21range,xlim=limites,ylim=limites, col='blue',type='l',xlab="",ylab="")
+par(new=T)
+plot(y12range,xlim=limites,xrange,ylim=limites, col='red',type='l',xlab="",ylab="")
+par(new=T)
+plot(y22range,xlim=limites,xrange,ylim=limites, col='blue',type='l',xlab="",ylab="")
+@
+\caption{Distribuição das amostras das classes C1 e C2.}
+\end{figure}
+
+Visualizando a desidade de probabilidade para das distribuições acima, temos os gráficos abaixo:
+
+\begin{figure}[H]
+\centering
+<<echo=F,fig=T>>=
+y3d1 <- matrix(nrow=length(xrange),ncol=length(xrange))
+y3d2 <- matrix(nrow=length(xrange),ncol=length(xrange))
+for(i in seq(length(xrange))) {
+  for(j in seq(length(xrange))) {
+    # P(x|C1)
+    y3d1[i,j] <- pcond2varcorr(xrange[i],xrange[j],m21,m22,sd21,sd22,p1)
+    
+    # P(x|C2)
+    y3d2[i,j] <- pcond2varcorr(xrange[i],xrange[j],m11,m12,sd11,sd12,p2)
+  }
+}
+
+#scatter3D(xc1[,1],xc1[,2],matrix(1,nrow=dim(xc1)[1],ncol=1))
+# ribbon3D(xrange,xrange,y3d1)
+# ribbon3D(xrange,xrange,y3d2,add=TRUE)
+
+persp3D(xrange,xrange,y3d1, xlab="X1",ylab="X2")
+persp3D(xrange,xrange,y3d2,add=TRUE)
+@
+\caption{Densidade de probabilidade.}
+\end{figure}
+
+\begin{figure}
+\centering
+<<echo=F,fig=T>>=
+contour2D(y3d1,xrange,xrange, xlab="X1",ylab="X2",xlim=limites,ylim=limites)
+contour2D(y3d2,xrange,xrange,xlim=limites,ylim=limites,add=TRUE)
+@
+\caption{Contorno das distribuições.}
+\end{figure}
+
+Considerando agora uma nova função em [3,3], temos:
+
+\begin{figure}[H]
+\centering
+<<echo=F,fig=T>>=
+library("MASS")
+xc3 <- mvrnorm(N*par, mu=c(3,3),Sigma=matrix(c(0.5,0.5,0.5,0.5),ncol=2))
+p3 <- cor(xc3[,1],xc3[,2])
+
+m31 <- mean(xc3[,1])
+sd31 <- sd(xc3[,1])
+
+m32 <- mean(xc3[,2])
+sd32 <- sd(xc3[,2])
+# 
+# y31range <- fnormal1var(xrange,m31,sd31)
+# y32range <- as.matrix(fnormal1var(xrange,m32,sd32))
+
+y3d3 <- matrix(nrow=length(xrange),ncol=length(xrange))
+for(i in seq(length(xrange))) {
+  for(j in seq(length(xrange))) {
+    y3d3[i,j] <- pcond2varcorr(xrange[i],xrange[j],m31,m32,sd31,sd32,p1)
+  }
+}
+contour2D(y3d1,xrange,xrange, xlab="X1",ylab="X2",xlim=limites,ylim=limites)
+contour2D(y3d2,xrange,xrange,xlim=limites,ylim=limites,add=TRUE)
+contour2D(y3d3,xrange,xrange,xlim=limites,ylim=limites,add=TRUE)
+@
+\caption{Contornos com uma terceira classe de média [3,3] e correlação 0.5.}
+\end{figure}
+
+\end{document}
