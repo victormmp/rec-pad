@@ -16,8 +16,9 @@ pcond2varcorr <- function(x1,x2,m1,m2,r1,r2,p) {
   return(y)
 }
 
-pCondManyVar <- <- function(x1,x2,m1,m2,r1,r2,p) {
-  y <- (1/((2*pi*r1*r2))*sqrt(1-p**2))*exp(-(1/(2*(1-p**2)))*(((x1-m1)/(r1))**2 + ((x2-m2)/(r2))**2 - ((2*p*(x1-m1)*(x2-m2))/(r1*r2))))
+pCondManyVar <- function(x, sumCorr, meansList) {
+    n <- length(x);
+  y <- 1/sqrt((2 * pi)^n * det(sumCorr)) * exp(-0.5 * t(x-meansList) * sumCorr^(-1)(x-meansList))
   
   return(y)
 }

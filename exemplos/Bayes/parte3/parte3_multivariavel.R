@@ -33,72 +33,47 @@ c3 <- xtf[11:15,]
 c4 <- xtf[16:20,]
 c5 <- xtf[21:25,]
 
-#======== ATE AQUI ESTA PRONTO
+#======== Montando as matrizes de covariâncias
 
-# ========== ESTIMANDO A FUNCAO GERADORA
+mc1 <- matrix(nrow=dim(c1)[2]);
+mc2 <- matrix(nrow=dim(c2)[2]);
+mc3 <- matrix(nrow=dim(c3)[2]);
+mc4 <- matrix(nrow=dim(c4)[2]);
+mc5 <- matrix(nrow=dim(c5)[2]);
 
-# Media e desvio padrao da primeira feature da classe 1
-m11 <- mean(xc1[,1])
-sd11 <- sd(xc1[,1])
+sdc1 <- matrix(nrow=dim(c1)[2]);
+sdc2 <- matrix(nrow=dim(c2)[2]);
+sdc3 <- matrix(nrow=dim(c3)[2]);
+sdc4 <- matrix(nrow=dim(c4)[2]);
+sdc5 <- matrix(nrow=dim(c5)[2]);
 
-# Media e desvio padrao da segunda feature da classe 1
-m12 <- mean(xc1[,2])
-sd12 <- sd(xc1[,2])
+p1 <- cor(c1)
+p2 <- cor(c2)
+p3 <- cor(c3)
+p4 <- cor(c4)
+p5 <- cor(c5)
 
-# Media e desvio padrao da primeira feature da classe 2
-m21 <- mean(xc2[,1])
-sd21 <- sd(xc2[,1])
+for (i in 1:6) {
+    mc1[i] <- mean(c1[,i]);
+    mc2[i] <- mean(c2[,i]);
+    mc3[i] <- mean(c3[,i]);
+    mc4[i] <- mean(c4[,i]);
+    mc5[i] <- mean(c5[,i]);
+    
+    sdc1[i] <- sd(c1[,i]);
+    sdc2[i] <- sd(c2[,i]);
+    sdc3[i] <- sd(c3[,i]);
+    sdc4[i] <- sd(c4[,i]);
+    sdc5[i] <- sd(c5[,i]);
+}
 
-# Media e desvio padrao da segunda feature da classe 2
-m22 <- mean(xc2[,2])
-sd22 <- sd(xc2[,2])
+sumc1 <- sdc1 %*% t(sdc1) * t(p1)
+sumc2 <- sdc2 %*% t(sdc2) * t(p2)
+sumc3 <- sdc3 %*% t(sdc3) * t(p3)
+sumc4 <- sdc4 %*% t(sdc4) * t(p4)
+sumc5 <- sdc5 %*% t(sdc5) * t(p5)
 
-# ========== ESTIMANDO AS PDFs MARGINAIS 
-
-xrange <- seq(0,10,0.1)
-y11range <- fnormal1var(xrange,m11,sd11)
-y12range <- fnormal1var(xrange,m12,sd12)
-y21range <- as.matrix(fnormal1var(xrange,m21,sd21))
-y22range <- as.matrix(fnormal1var(xrange,m22,sd22))
-
-par(new=T)
-plot(xrange,y11range,xlim=c(0,10),ylim=c(0,10), col='red',type='l',xlab="",ylab="")
-par(new=T)
-plot(xrange,y21range,xlim=c(0,10),ylim=c(0,10), col='blue',type='l',xlab="",ylab="")
-par(new=T)
-plot(y12range,xlim=c(0,10),xrange,ylim=c(0,10), col='red',type='l',xlab="",ylab="")
-par(new=T)
-plot(y22range,xlim=c(0,10),xrange,ylim=c(0,10), col='blue',type='l',xlab="",ylab="")
-
-# ========== GERANDO GRAFICO 3D DAS PDFs DAS DISTRIBUICOES
-
-y3d1 <- y11range %*% t(y12range)
-y3d2 <- y21range %*% t(y22range)
-
-#scatter3D(xc1[,1],xc1[,2],matrix(1,nrow=dim(xc1)[1],ncol=1))
-# ribbon3D(xrange,xrange,y3d1)
-# ribbon3D(xrange,xrange,y3d2,add=TRUE)
-
-persp3D(xrange,xrange,y3d1)
-persp3D(xrange,xrange,y3d2,add=TRUE)
-
-# ========== CALCULO DO CLASSIFICADOR BINARIO DE BAYES
-#
-# Ja que os atributos de cada classe sao independentes, as verossimilhancas 
-# posem ser calculadas diretamente por meio do produto das pdfs marginais.
-
-pxc1 <- matrix(nrow=length(xrange),ncol=length(xrange))
-pxc2 <- matrix(nrow=length(xrange),ncol=length(xrange))
-
-# for(i in seq(length(xrange))) {
-#   for(j in seq(length(xrange))) {
-#     # P(x|C1)
-#     pxc1[i,j] <- pcond2var(xrange[i],xrange[j],m21,m22,sd21,sd22)
-#     
-#     # P(x|C2)
-#     pxc2[i,j] <- pcond2var(xrange[i],xrange[j],m11,m12,sd11,sd12)
-#   }
-# }
+# ======== ATÉ AQUI TÁ PRONTO
 
 for(i in seq(length(xrange))) {
   for(j in seq(length(xrange))) {
