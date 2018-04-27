@@ -23,3 +23,5 @@ ybreast <- MDS(usa,0.001)
 
 plot(yusa[,1],yusa[,2])
 
+
+
