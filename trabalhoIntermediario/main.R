@@ -30,29 +30,58 @@ rm(nomeColunas)
 
 dim_classe <- 10
 
-N <- sample(0.7 * dim_classe)
-n <- sample(0.3 * dim_classe)
+N <- sample(dim_classe, 0.7 * dim_classe)
+n <- sample(dim_classe, 0.3 * dim_classe)
+
+numClasses <- 40
+numAmostras <- 10
+
 xtreino <- c()
 ytreino <- c()
 xteste <- c()
 yteste <- c()
 
-for()
-
-
-for(i in N) {
-  xtreino <- rbind(xtreino, t(faces[i,]))
-  ytreino <- c(ytreino,(y[i]))
+for(r in seq(1,numClasses,numAmostras)) {
+  for(i in N) {
+    xtreino <- rbind(xtreino, t(faces[r+i-1,]))
+    ytreino <- c(ytreino,(y[r+i-1]))
+  }
+  
+  for(i in n) {
+    xteste <- rbind(xteste, t(faces[r+i-1,]))
+    yteste <- c(yteste,(y[r+i-1]))
+  }
 }
 
-for(i in n) {
-  xteste <- rbind(xteste, t(faces[i,]))
-  yteste <- c(yteste,(y[i]))
-}
+
+
 
 #==============================
 
+# Library KNN
 
+# install.packages("class")
+# install.packages("stats")
+library("class")
+library("stats")
+
+# Funcao PCA
+# prcomp
+
+# Funcao MDS
+# cmdscale( xtreino, k=2)
+
+# Funcao KNN
+# knn(xtreino,xteste,ytreino,k=3)
+
+# funcao Bayes
+# 
+
+# Achando o menor numero de atributos pelo pca
+
+exat <- 0.9
+
+xtreinoPCA <- prcomp(xtreino, scale=TRUE)
 
 
 
