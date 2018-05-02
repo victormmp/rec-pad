@@ -33,7 +33,7 @@ dim_classe <- 10
 N <- sample(dim_classe, 0.7 * dim_classe)
 n <- sample(dim_classe, 0.3 * dim_classe)
 
-numClasses <- 40
+numClasses <- 400
 numAmostras <- 10
 
 xtreino <- c()
