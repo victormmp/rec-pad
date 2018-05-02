@@ -5,15 +5,9 @@ data( faces )
 faces <- t( faces )
 rotate <- function(x) t( apply(x, 2, rev) )
 
-MostraImagem <- function( x )
-{
-  img <- matrix( x, nrow=64 )
-  cor <- rev( gray(50:1/50) )
-  image( rotate( img ), col=cor )
-}
-MostraImagem( faces[1,] )
+source("functionsImagem.R")
 
-#Gerando os r´otulos
+#Gerando os rotulos
 y <- NULL
 for(i in 1:nrow(faces) )
 {
@@ -28,3 +22,39 @@ for(i in 1:ncol(faces) )
 }
 colnames(faces) <- nomeColunas
 rownames(faces) <- NULL
+
+rm(nomeColunas)
+# =========================
+
+# Get random for tests
+
+dim_classe <- 10
+
+N <- sample(0.7 * dim_classe)
+n <- sample(0.3 * dim_classe)
+xtreino <- c()
+ytreino <- c()
+xteste <- c()
+yteste <- c()
+
+for()
+
+
+for(i in N) {
+  xtreino <- rbind(xtreino, t(faces[i,]))
+  ytreino <- c(ytreino,(y[i]))
+}
+
+for(i in n) {
+  xteste <- rbind(xteste, t(faces[i,]))
+  yteste <- c(yteste,(y[i]))
+}
+
+#==============================
+
+
+
+
+
+
+
