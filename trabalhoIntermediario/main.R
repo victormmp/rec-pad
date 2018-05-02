@@ -66,7 +66,7 @@ library("class")
 library("stats")
 
 # Funcao PCA
-# prcomp
+# prcomp(xtreino, scale=TRUE, retx=TRUE)
 
 # Funcao MDS
 # cmdscale( xtreino, k=2)
