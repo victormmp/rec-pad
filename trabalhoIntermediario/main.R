@@ -1,15 +1,31 @@
 rm(list = ls())
+
+cat("\f")
+
+cat("===== Starting Routine =====\n")
+
 require(RnavGraphImageData)
+# install.packages("class")
+# install.packages("stats")
+library("class")
+library("stats")
+library("tictoc")
+
 # Carregando a Base de dados
+cat(">> Carregando a base de dados...\n")
+
 data( faces )
 faces <- t( faces )
 rotate <- function(x) t( apply(x, 2, rev) )
 
+cat(">> Importando funções...\n")
+
 source("functionsImagem.R")
 
-cat("===== Starting Routine =====")
 
 #Gerando os rotulos
+cat(">> Gerando os rórulos para os dados...")
+
 y <- NULL
 for(i in 1:nrow(faces) )
 {
@@ -36,9 +52,12 @@ faces <- as.data.frame(faces, row.names = nomeLinhas)
 
 rm(nomeColunas)
 rm(nomeLinhas)
+
+cat(" Rótulos gerados.\n")
 # =========================
 
 # Get random for tests
+cat(">> Gerando dados de treino e teste aleatórios...")
 
 dim_classe <- 10
 
@@ -65,17 +84,14 @@ for(r in seq(1,numClasses,numAmostras)) {
   }
 }
 
-cat(c("Dim xtreino: ",dim(xtreino)))
+cat(" Dados gerados.\n")
+
+# cat(c("Dim xtreino: ",dim(xtreino)))
 
 
 #==============================
 
 # Library KNN
-
-# install.packages("class")
-# install.packages("stats")
-library("class")
-library("stats")
 
 # Funcao PCA
 # prcomp(xtreino, scale=TRUE, retx=TRUE)
@@ -90,6 +106,8 @@ library("stats")
 # 
 
 # Achando o menor numero de atributos pelo pca
+
+cat(">> Inicializando treinamento...\n")
 
 exat <- 0.9
 
