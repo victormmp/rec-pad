@@ -7,6 +7,8 @@ rotate <- function(x) t( apply(x, 2, rev) )
 
 source("functionsImagem.R")
 
+cat("===== Starting Routine =====")
+
 #Gerando os rotulos
 y <- NULL
 for(i in 1:nrow(faces) )
@@ -20,10 +22,20 @@ for(i in 1:ncol(faces) )
 {
   nomeColunas <- c(nomeColunas, paste("a", as.character(i), sep=".") )
 }
+
+nomeLinhas <- NULL
+for(i in 1:nrow(faces)) {
+    nomeLinhas <- c(nomeLinhas, paste("face", as.character(y[i]),as.character(i),sep="."))
+}
+
 colnames(faces) <- nomeColunas
-rownames(faces) <- NULL
+
+faces <- as.data.frame(faces, row.names = nomeLinhas)
+
+# rownames(faces) <- nomeLinhas
 
 rm(nomeColunas)
+rm(nomeLinhas)
 # =========================
 
 # Get random for tests
@@ -43,17 +55,17 @@ yteste <- c()
 
 for(r in seq(1,numClasses,numAmostras)) {
   for(i in N) {
-    xtreino <- rbind(xtreino, t(faces[r+i-1,]))
+    xtreino <- rbind(xtreino, (faces[r+i-1,]))
     ytreino <- c(ytreino,(y[r+i-1]))
   }
   
   for(i in n) {
-    xteste <- rbind(xteste, t(faces[r+i-1,]))
+    xteste <- rbind(xteste, (faces[r+i-1,]))
     yteste <- c(yteste,(y[r+i-1]))
   }
 }
 
-
+cat(c("Dim xtreino: ",dim(xtreino)))
 
 
 #==============================
@@ -82,6 +94,7 @@ library("stats")
 exat <- 0.9
 
 xtreinoPCA <- prcomp(xtreino, scale=TRUE)
+xtreinoMDS <- cmdscale(dist(xtreino), k=2)
 
 
 
