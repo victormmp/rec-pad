@@ -9,7 +9,8 @@ require(RnavGraphImageData)
 # install.packages("stats")
 library("class")
 library("stats")
-library("tictoc")
+library("caret")
+# library("tictoc")
 
 # Carregando a Base de dados
 cat(">> Carregando a base de dados...\n")
@@ -18,13 +19,13 @@ data( faces )
 faces <- t( faces )
 rotate <- function(x) t( apply(x, 2, rev) )
 
-cat(">> Importando funções...\n")
+cat(">> Importando funÃ§Ãµes...\n")
 
 source("functionsImagem.R")
 
 
 #Gerando os rotulos
-cat(">> Gerando os rórulos para os dados...")
+cat(">> Gerando os rorulos para os dados...")
 
 y <- NULL
 for(i in 1:nrow(faces) )
@@ -53,11 +54,11 @@ faces <- as.data.frame(faces, row.names = nomeLinhas)
 rm(nomeColunas)
 rm(nomeLinhas)
 
-cat(" Rótulos gerados.\n")
+cat(" Rotulos gerados.\n")
 # =========================
 
 # Get random for tests
-cat(">> Gerando dados de treino e teste aleatórios...")
+cat(">> Gerando dados de treino e teste aleatorios...")
 
 dim_classe <- 10
 
@@ -96,6 +97,10 @@ cat(" Dados gerados.\n")
 # Funcao PCA
 # prcomp(xtreino, scale=TRUE, retx=TRUE)
 
+# preProc <- preProcess(log10(spam[,-58]+1),method="pca",pcaComp=2)
+# spamPC <- predict(preProc,log10(spam[,-58]+1))
+# plot(spamPC[,1],spamPC[,2],col=typeColor)
+
 # Funcao MDS
 # cmdscale( xtreino, k=2)
 
@@ -111,10 +116,9 @@ cat(">> Inicializando treinamento...\n")
 
 exat <- 0.9
 
-xtreinoPCA <- prcomp(xtreino, scale=TRUE)
+# xtreinoPCA <- prcomp(xtreino, scale=TRUE)
 xtreinoMDS <- cmdscale(dist(xtreino), k=2)
 
-
-
-
-
+preProc <- preProcess(xtreino,method="pca",pcaComp=3)
+spamPC <- predict(preProc,xteste)
+plot(spamPC[,1],spamPC[,2])
