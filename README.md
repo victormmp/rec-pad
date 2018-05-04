@@ -11,3 +11,6 @@
 
 ### KNN
  - Código de exmplo de um separador por KNN (Known Next Neighbours), demonstranto a implementação do mesmo, e a dificuldade de separar amostras quando há sobreposição.
+
+
+https://rstudio-pubs-static.s3.amazonaws.com/92006_344e916f251146daa0dc49fef94e2104.html
