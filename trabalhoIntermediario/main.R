@@ -25,7 +25,7 @@ source("functionsImagem.R")
 
 
 #Gerando os rotulos
-cat(">> Gerando os rorulos para os dados...")
+cat(">> Gerando os rotulos para os dados...")
 
 y <- NULL
 for(i in 1:nrow(faces) )
@@ -49,24 +49,46 @@ colnames(faces) <- nomeColunas
 
 faces <- as.data.frame(faces, row.names = nomeLinhas)
 
-# rownames(faces) <- nomeLinhas
-
 rm(nomeColunas)
 rm(nomeLinhas)
 
 cat(" Rotulos gerados.\n")
-# =========================
+
+# ======================================
+
+cat(">> Reduzindo atributos com PCA... ")
+tic("Done!")
+
+exat <- 0.9
+
+preProc <- preProcess(faces,method="pca")
+facesPCA <- predict(preProc,faces)
+toc()
+
+cat(c("\nNumero minimo de atributos para 95% de acuracia com PCA: ", preProc$numComp, "\n"))
+cat("\n")
+
+cat(">> Reduzindo atributos com MDS... ")
+tic("Done!")
+
+facesMDS <- cmdscale(dist(faces), k=2)
+toc()
+
+# plot(1:4096,facesPCA$std)
+
 
 # Get random for tests
 cat(">> Gerando dados de treino e teste aleatorios...")
 
 dim_classe <- 10
-
-N <- sample(dim_classe, 0.7 * dim_classe)
-n <- sample(dim_classe, 0.3 * dim_classe)
-
 numClasses <- 400
 numAmostras <- 10
+
+seqN <- sample(numAmostras)
+porcAmostTrain <- 0.3
+
+N <- seqN[1:(porcAmostTrain*numAmostras)]
+n <- seqN[(porcAmostTrain*numAmostras+1):numAmostras]
 
 xtreino <- c()
 ytreino <- c()
@@ -86,9 +108,6 @@ for(r in seq(1,numClasses,numAmostras)) {
 }
 
 cat(" Dados gerados.\n")
-
-# cat(c("Dim xtreino: ",dim(xtreino)))
-
 
 #==============================
 
@@ -112,13 +131,7 @@ cat(" Dados gerados.\n")
 
 # Achando o menor numero de atributos pelo pca
 
-cat(">> Inicializando treinamento...\n")
 
-exat <- 0.9
 
-# xtreinoPCA <- prcomp(xtreino, scale=TRUE)
-xtreinoMDS <- cmdscale(dist(xtreino), k=2)
-
-preProc <- preProcess(xtreino,method="pca",pcaComp=3)
-spamPC <- predict(preProc,xteste)
-plot(spamPC[,1],spamPC[,2])
+# spamPC <- predict(preProc,xteste)
+# plot(spamPC[,1],spamPC[,2])
