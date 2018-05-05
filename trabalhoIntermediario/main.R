@@ -19,7 +19,7 @@ data( faces )
 faces <- t( faces )
 rotate <- function(x) t( apply(x, 2, rev) )
 
-cat(">> Importando funÃ§Ãµes...\n")
+cat(">> Importando funcoes...\n")
 
 source("functionsImagem.R")
 
