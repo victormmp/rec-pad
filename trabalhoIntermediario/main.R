@@ -1,8 +1,11 @@
 rm(list = ls())
+this.dir <- dirname(parent.frame(2)$ofile)
+setwd(this.dir)
 
 cat("\f")
 
 cat("===== Starting Routine =====\n")
+tic("Total elapsed time")
 
 require(RnavGraphImageData)
 # install.packages("class")
@@ -10,22 +13,23 @@ require(RnavGraphImageData)
 library("class")
 library("stats")
 library("caret")
-# library("tictoc")
+library("tictoc")
 
 # Carregando a Base de dados
-cat(">> Carregando a base de dados...\n")
+cat(">> Loading database...\n")
 
 data( faces )
 faces <- t( faces )
 rotate <- function(x) t( apply(x, 2, rev) )
 
-cat(">> Importando funcoes...\n")
+cat(">> Importing methods...\n")
 
 source("functionsImagem.R")
+source("checkAccFunction.R")
 
 
 #Gerando os rotulos
-cat(">> Gerando os rotulos para os dados...")
+cat(">> Generating data labels...")
 
 y <- NULL
 for(i in 1:nrow(faces) )
@@ -52,12 +56,12 @@ faces <- as.data.frame(faces, row.names = nomeLinhas)
 rm(nomeColunas)
 rm(nomeLinhas)
 
-cat(" Rotulos gerados.\n")
+cat(" Done!\n")
 
 # ======================================
 
-cat(">> Reduzindo atributos com PCA... ")
-tic("Done!")
+cat(">> Decreasing number of features with PCA... ")
+tic("Done")
 
 exat <- 0.9
 
@@ -65,20 +69,21 @@ preProc <- preProcess(faces,method="pca")
 facesPCA <- predict(preProc,faces)
 toc()
 
-cat(c("\nNumero minimo de atributos para 95% de acuracia com PCA: ", preProc$numComp, "\n"))
+cat(c("\nMinimum number of features for 95% accuracy with PCA: ", preProc$numComp, " features.\n"))
 cat("\n")
 
-cat(">> Reduzindo atributos com MDS... ")
-tic("Done!")
+cat(">> Decreasing number of features with MDS... ")
+tic("Done")
 
-facesMDS <- cmdscale(dist(faces), k=2)
+facesMDS <- cmdscale(dist(faces), k=preProc$numComp)
 toc()
 
 # plot(1:4096,facesPCA$std)
 
 
 # Get random for tests
-cat(">> Gerando dados de treino e teste aleatorios...")
+cat(">> Creating random training and test datasets...")
+tic("Done")
 
 dim_classe <- 10
 numClasses <- 400
@@ -90,28 +95,55 @@ porcAmostTrain <- 0.3
 N <- seqN[1:(porcAmostTrain*numAmostras)]
 n <- seqN[(porcAmostTrain*numAmostras+1):numAmostras]
 
-xtreino <- c()
+xtreinoPCA <- c()
+xtreinoMDS <- c()
 ytreino <- c()
-xteste <- c()
+xtestePCA <- c()
+xtesteMDS <- c()
 yteste <- c()
 
 for(r in seq(1,numClasses,numAmostras)) {
   for(i in N) {
-    xtreino <- rbind(xtreino, (faces[r+i-1,]))
+    xtreinoPCA <- rbind(xtreinoPCA, (facesPCA[r+i-1,]))
+    xtreinoMDS <- rbind(xtreinoMDS, (facesMDS[r+i-1,]))
     ytreino <- c(ytreino,(y[r+i-1]))
   }
   
   for(i in n) {
-    xteste <- rbind(xteste, (faces[r+i-1,]))
+    xtestePCA <- rbind(xtestePCA, (facesPCA[r+i-1,]))
+    xtesteMDS <- rbind(xtesteMDS, (facesMDS[r+i-1,]))
     yteste <- c(yteste,(y[r+i-1]))
   }
 }
 
-cat(" Dados gerados.\n")
+toc()
+
+# ============ Classificando com KNN
+
+
+cat(">> Training with KNN and PCA... ")
+tic("Done")
+
+resultKNN <- c()
+
+for (i in seq(10)) {
+    separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
+    resultKNN <- c(resultKNN, (checkAcc(separation, yteste)[2]))
+}
+
+toc()
+
+meanResultKNN <- mean(resultKNN)
+
+cat("\nAccuracy of KNN for diferents N neighbours")
+cat("\n==========================================")
+cat("\n   N        Acc  \n")
+for(i in seq(10)){
+    cat(c("\n  ",i, "     ", resultKNN[i], "  "))
+}
+cat("\n")
 
 #==============================
-
-# Library KNN
 
 # Funcao PCA
 # prcomp(xtreino, scale=TRUE, retx=TRUE)
@@ -135,3 +167,6 @@ cat(" Dados gerados.\n")
 
 # spamPC <- predict(preProc,xteste)
 # plot(spamPC[,1],spamPC[,2])
+
+cat("\n===== Routine Finished =====\n")
+toc()
