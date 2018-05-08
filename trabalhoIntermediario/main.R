@@ -120,7 +120,6 @@ toc()
 
 # ============ Classificando com KNN
 
-
 cat(">> Training with KNN and PCA... ")
 tic("Done")
 
@@ -135,9 +134,31 @@ toc()
 
 meanResultKNN <- mean(resultKNN)
 
-cat("\nAccuracy of KNN for diferents N neighbours")
-cat("\n==========================================")
-cat("\n   N        Acc  \n")
+cat("\nAccuracy of KNN and PCA for diferents N neighbours")
+cat("\n==================================================")
+cat("\n   N        Acc (%)  \n")
+for(i in seq(10)){
+    cat(c("\n  ",i, "     ", resultKNN[i], "  "))
+}
+cat("\n")
+
+cat(">> Training with KNN and MDS... ")
+tic("Done")
+
+resultKNN <- c()
+
+for (i in seq(10)) {
+    separation <- knn(xtreinoMDS,xtesteMDS,ytreino,k=i)
+    resultKNN <- c(resultKNN, (checkAcc(separation, yteste)[2]))
+}
+
+toc()
+
+meanResultKNN <- mean(resultKNN)
+
+cat("\nAccuracy of KNN and MDS for diferents N neighbours")
+cat("\n==================================================")
+cat("\n   N        Acc(%)  \n")
 for(i in seq(10)){
     cat(c("\n  ",i, "     ", resultKNN[i], "  "))
 }
@@ -162,8 +183,6 @@ cat("\n")
 # 
 
 # Achando o menor numero de atributos pelo pca
-
-
 
 # spamPC <- predict(preProc,xteste)
 # plot(spamPC[,1],spamPC[,2])
