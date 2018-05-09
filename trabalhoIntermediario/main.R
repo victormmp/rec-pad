@@ -5,7 +5,6 @@ setwd(this.dir)
 cat("\f")
 
 cat("===== Starting Routine =====\n")
-tic("Total elapsed time")
 
 require(RnavGraphImageData)
 # install.packages("class")
@@ -14,6 +13,8 @@ library("class")
 library("stats")
 library("caret")
 library("tictoc")
+
+tic("Total elapsed time")
 
 # Carregando a Base de dados
 cat(">> Loading database...\n")
@@ -34,14 +35,14 @@ cat(">> Generating data labels...")
 y <- NULL
 for(i in 1:nrow(faces) )
 {
-  y <- c( y, ((i-1) %/% 10) + 1 )
+    y <- c( y, ((i-1) %/% 10) + 1 )
 }
 
 # Nomeando os atributos
 nomeColunas <- NULL
 for(i in 1:ncol(faces) )
 {
-  nomeColunas <- c(nomeColunas, paste("a", as.character(i), sep=".") )
+    nomeColunas <- c(nomeColunas, paste("a", as.character(i), sep=".") )
 }
 
 nomeLinhas <- NULL
@@ -95,25 +96,29 @@ porcAmostTrain <- 0.3
 N <- seqN[1:(porcAmostTrain*numAmostras)]
 n <- seqN[(porcAmostTrain*numAmostras+1):numAmostras]
 
+xtreino <- c()
 xtreinoPCA <- c()
 xtreinoMDS <- c()
 ytreino <- c()
+xteste <- c()
 xtestePCA <- c()
 xtesteMDS <- c()
 yteste <- c()
 
 for(r in seq(1,numClasses,numAmostras)) {
-  for(i in N) {
-    xtreinoPCA <- rbind(xtreinoPCA, (facesPCA[r+i-1,]))
-    xtreinoMDS <- rbind(xtreinoMDS, (facesMDS[r+i-1,]))
-    ytreino <- c(ytreino,(y[r+i-1]))
-  }
-  
-  for(i in n) {
-    xtestePCA <- rbind(xtestePCA, (facesPCA[r+i-1,]))
-    xtesteMDS <- rbind(xtesteMDS, (facesMDS[r+i-1,]))
-    yteste <- c(yteste,(y[r+i-1]))
-  }
+    for(i in N) {
+        xtreino <- rbind(xtreino, (faces[r+i-1,]))
+        xtreinoPCA <- rbind(xtreinoPCA, (facesPCA[r+i-1,]))
+        xtreinoMDS <- rbind(xtreinoMDS, (facesMDS[r+i-1,]))
+        ytreino <- c(ytreino,(y[r+i-1]))
+    }
+    
+    for(i in n) {
+        xteste <- rbind(xteste, (faces[r+i-1,]))
+        xtestePCA <- rbind(xtestePCA, (facesPCA[r+i-1,]))
+        xtesteMDS <- rbind(xtesteMDS, (facesMDS[r+i-1,]))
+        yteste <- c(yteste,(y[r+i-1]))
+    }
 }
 
 toc()
@@ -123,32 +128,54 @@ toc()
 cat(">> Training with KNN and PCA... ")
 tic("Done")
 
-resultKNN <- c()
+resultKNNPCA <- c()
 
 for (i in seq(10)) {
     separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
-    resultKNN <- c(resultKNN, (checkAcc(separation, yteste)[2]))
+    resultKNNPCA <- c(resultKNNPCA, (checkAcc(separation, yteste)[2]))
 }
 
 toc()
 
-meanResultKNN <- mean(resultKNN)
+meanResultKNNPCA <- mean(resultKNNPCA)
 
 cat("\nAccuracy of KNN and PCA for diferents N neighbours")
 cat("\n==================================================")
 cat("\n   N        Acc (%)  \n")
 for(i in seq(10)){
-    cat(c("\n  ",i, "     ", resultKNN[i], "  "))
+    cat(c("\n  ",i, "     ", resultKNNPCA[i], "  "))
 }
 cat("\n")
 
 cat(">> Training with KNN and MDS... ")
 tic("Done")
 
-resultKNN <- c()
+resultKNNMDS <- c()
 
 for (i in seq(10)) {
     separation <- knn(xtreinoMDS,xtesteMDS,ytreino,k=i)
+    resultKNNMDS <- c(resultKNNMDS, (checkAcc(separation, yteste)[2]))
+}
+
+toc()
+
+meanResultKNNMDS <- mean(resultKNNMDS)
+
+cat("\nAccuracy of KNN and MDS for diferents N neighbours")
+cat("\n==================================================")
+cat("\n   N        Acc(%)  \n")
+for(i in seq(10)){
+    cat(c("\n  ",i, "     ", resultKNNMDS[i], "  "))
+}
+cat("\n")
+
+cat(">> Training with KNN and full features... ")
+tic("Done")
+
+resultKNN <- c()
+
+for (i in seq(10)) {
+    separation <- knn(xtreino,xteste,ytreino,k=i)
     resultKNN <- c(resultKNN, (checkAcc(separation, yteste)[2]))
 }
 
@@ -156,8 +183,8 @@ toc()
 
 meanResultKNN <- mean(resultKNN)
 
-cat("\nAccuracy of KNN and MDS for diferents N neighbours")
-cat("\n==================================================")
+cat("\nAccuracy of KNN and full features for diferents N neighbours")
+cat("\n============================================================")
 cat("\n   N        Acc(%)  \n")
 for(i in seq(10)){
     cat(c("\n  ",i, "     ", resultKNN[i], "  "))
