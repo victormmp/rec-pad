@@ -82,21 +82,28 @@ McList <- kMeans(X,k,maxit)
 Mc <- McList$Mc
 Clustx <- McList$Clustx
 
-ixg1 <- which(Clustx == 1)
-ixg2 <- which(Clustx == 2)
-ixg3 <- which(Clustx == 3)
+xCluster1 <- list()
+
+for(i in seq(k)) {
+  ici <- which(Clustx == i)
+  xCluster1[[i]] <- X[ici,]
+}
+
+# ixg1 <- which(Clustx == 1)
+# ixg2 <- which(Clustx == 2)
+# ixg3 <- which(Clustx == 3)
 
 print(Mc)
 
-plot(X[ixg1,1],X[ixg1,2],xlim=plotLim,ylim=plotLim,col=2)
-par(new=T)
-plot(X[ixg2,1],X[ixg2,2],xlim=plotLim,ylim=plotLim,col=3)
-par(new=T)
-plot(X[ixg3,1],X[ixg3,2],xlim=plotLim,ylim=plotLim,col=4)
-par(new=T)
-plot(Mc[1,1],Mc[1,2],xlim=plotLim,ylim=plotLim,col=1,pch=15)
-par(new=T)
-plot(Mc[2,1],Mc[2,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
+# plot(X[ixg1,1],X[ixg1,2],xlim=plotLim,ylim=plotLim,col=2)
+# par(new=T)
+# plot(X[ixg2,1],X[ixg2,2],xlim=plotLim,ylim=plotLim,col=3)
+# par(new=T)
+# plot(X[ixg3,1],X[ixg3,2],xlim=plotLim,ylim=plotLim,col=4)
+# par(new=T)
+# plot(Mc[1,1],Mc[1,2],xlim=plotLim,ylim=plotLim,col=1,pch=15)
+# par(new=T)
+# plot(Mc[2,1],Mc[2,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
 
 # http://www.sthda.com/english/wiki/r-plot-pch-symbols-the-different-point-shapes-available-in-r
 
