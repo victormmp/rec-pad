@@ -137,13 +137,16 @@ toc()
 cat(">> Training with KNN and PCA... ")
 tic("Done")
 
-resultKNNPCA <- matrix(ncol=2)
-colnames(resultKNNPCA) <- c("N","Accuracy")
+resultKNNPCA <- c()
+
 
 for (i in seq(10)) {
     separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
     resultKNNPCA <- rbind(resultKNNPCA,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
+
+
+colnames(resultKNNPCA) <- c("N","Accuracy")
 
 toc()
 
@@ -162,13 +165,15 @@ cat("\n")
 cat(">> Training with KNN and MDS... ")
 tic("Done")
 
-resultKNNMDS <- matrix(ncol=2)
-colnames(resultKNNMDS) <- c("N","Accuracy")
+resultKNNMDS <- c()
 
 for (i in seq(10)) {
     separation <- knn(xtreinoMDS,xtesteMDS,ytreino,k=i)
     resultKNNMDS <- rbind(resultKNNMDS,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
+
+
+colnames(resultKNNMDS) <- c("N","Accuracy")
 
 toc()
 
@@ -186,13 +191,14 @@ cat("\n")
 cat(">> Training with KNN and full features... ")
 tic("Done")
 
-resultKNN <- matrix(ncol=2)
-colnames(resultKNN) <- c("N","Accuracy")
+resultKNN <- c()
 
 for (i in seq(10)) {
     separation <- knn(xtreino,xteste,ytreino,k=i)
     resultKNN <- rbind(resultKNN,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
+
+colnames(resultKNN) <- c("N","Accuracy")
 
 toc()
 
@@ -206,6 +212,21 @@ for(i in seq(10)){
     cat(c("\n  ",i, "     ", resultKNN[i,2], "  "))
 }
 cat("\n")
+
+cat(">> Training with Bayes and PCA... ")
+tic("Done")
+
+toc()
+
+cat(">> Training with Bayes and MDS... ")
+tic("Done")
+
+toc()
+
+cat(">> Training with Bayes and full features... ")
+tic("Done")
+
+toc()
 
 #==============================
 
@@ -225,10 +246,6 @@ cat("\n")
 # funcao Bayes
 # 
 
-# Achando o menor numero de atributos pelo pca
-
-# spamPC <- predict(preProc,xteste)
-# plot(spamPC[,1],spamPC[,2])
 
 cat("\n===== Routine Finished =====\n")
 toc()
