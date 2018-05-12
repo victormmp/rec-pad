@@ -62,6 +62,9 @@ cat(" Done!\n")
 # ======================================
 
 cat(">> Decreasing number of features with PCA... ")
+
+results <- list()
+
 tic("Done")
 
 exat <- 0.9
@@ -76,10 +79,16 @@ cat("\n")
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
 
-facesMDS <- cmdscale(dist(faces), k=preProc$numComp)
+kMDS <- 300
+# kMDS <- preProc$numComp
+
+facesMDS <- cmdscale(dist(faces), k=kMDS)
 toc()
 
 # plot(1:4096,facesPCA$std)
+
+cat(c("\nNumber of features for MDS reduction: ", kMDS, " features.\n"))
+cat("\n")
 
 
 # Get random for tests
@@ -128,66 +137,73 @@ toc()
 cat(">> Training with KNN and PCA... ")
 tic("Done")
 
-resultKNNPCA <- c()
+resultKNNPCA <- matrix(ncol=2)
+colnames(resultKNNPCA) <- c("N","Accuracy")
 
 for (i in seq(10)) {
     separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
-    resultKNNPCA <- c(resultKNNPCA, (checkAcc(separation, yteste)[2]))
+    resultKNNPCA <- rbind(resultKNNPCA,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
 
 toc()
 
-meanResultKNNPCA <- mean(resultKNNPCA)
+meanResultKNNPCA <- mean(resultKNNPCA[,2])
+results[["KNNPCA"]] <- resultKNNPCA
+
 
 cat("\nAccuracy of KNN and PCA for diferents N neighbours")
 cat("\n==================================================")
 cat("\n   N        Acc (%)  \n")
 for(i in seq(10)){
-    cat(c("\n  ",i, "     ", resultKNNPCA[i], "  "))
+    cat(c("\n  ",i, "     ", resultKNNPCA[i,2], "  "))
 }
 cat("\n")
 
 cat(">> Training with KNN and MDS... ")
 tic("Done")
 
-resultKNNMDS <- c()
+resultKNNMDS <- matrix(ncol=2)
+colnames(resultKNNMDS) <- c("N","Accuracy")
 
 for (i in seq(10)) {
     separation <- knn(xtreinoMDS,xtesteMDS,ytreino,k=i)
-    resultKNNMDS <- c(resultKNNMDS, (checkAcc(separation, yteste)[2]))
+    resultKNNMDS <- rbind(resultKNNMDS,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
 
 toc()
 
-meanResultKNNMDS <- mean(resultKNNMDS)
+meanResultKNNMDS <- mean(resultKNNMDS[,2])
+results[["KNNMDS"]] <- resultKNNMDS
 
 cat("\nAccuracy of KNN and MDS for diferents N neighbours")
 cat("\n==================================================")
 cat("\n   N        Acc(%)  \n")
 for(i in seq(10)){
-    cat(c("\n  ",i, "     ", resultKNNMDS[i], "  "))
+    cat(c("\n  ",i, "     ", resultKNNMDS[i,2], "  "))
 }
 cat("\n")
 
 cat(">> Training with KNN and full features... ")
 tic("Done")
 
-resultKNN <- c()
+resultKNN <- matrix(ncol=2)
+colnames(resultKNN) <- c("N","Accuracy")
 
 for (i in seq(10)) {
     separation <- knn(xtreino,xteste,ytreino,k=i)
-    resultKNN <- c(resultKNN, (checkAcc(separation, yteste)[2]))
+    resultKNN <- rbind(resultKNN,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
 }
 
 toc()
 
-meanResultKNN <- mean(resultKNN)
+meanResultKNN <- mean(resultKNN[,2])
+results[["KNNFULL"]] <- resultKNN
 
 cat("\nAccuracy of KNN and full features for diferents N neighbours")
 cat("\n============================================================")
 cat("\n   N        Acc(%)  \n")
 for(i in seq(10)){
-    cat(c("\n  ",i, "     ", resultKNN[i], "  "))
+    cat(c("\n  ",i, "     ", resultKNN[i,2], "  "))
 }
 cat("\n")
 
