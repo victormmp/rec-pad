@@ -31,7 +31,7 @@ cat(">> Importing methods...\n")
 source("functionsImagem.R")
 source("checkAccFunction.R")
 
-cat(">> Normalizing dataset... \n")
+cat(">> Normalizing dataset... ")
 tic("Done")
 
 faces <- scalar1(faces)
@@ -83,6 +83,9 @@ toc()
 
 cat(c("\nMinimum number of features for 95% accuracy with PCA: ", preProc$numComp, " features.\n"))
 cat("\n")
+
+preProc <- preProcess(faces,method="pca", pcaComp = 5)
+facesPCA <- predict(preProc,faces)
 
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
