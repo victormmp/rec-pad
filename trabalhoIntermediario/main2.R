@@ -13,8 +13,8 @@ require(RnavGraphImageData)
 # biocLite("vbmp")
 library("class")
 library("stats")
-library("caret")
 library("tictoc")
+library("corpcor")
 library(vbmp)
 
 tic("Total elapsed time")
@@ -30,12 +30,6 @@ cat(">> Importing methods...\n")
 
 source("functionsImagem.R")
 source("checkAccFunction.R")
-
-cat(">> Normalizing dataset... ")
-tic("Done")
-
-faces <- scalar1(faces)
-toc()
 
 #Gerando os rotulos
 cat(">> Generating data labels...")
@@ -67,7 +61,7 @@ rm(nomeLinhas)
 
 cat(" Done!\n")
 
-# ======================================
+# ===== DIMINUINDO O NÚMERO DE ATRIBUTOS COM PCA =====
 
 cat(">> Decreasing number of features with PCA... ")
 
@@ -75,32 +69,26 @@ results <- list()
 
 tic("Done")
 
-exat <- 0.9
+facesPCAaux <- prcomp(faces, center=TRUE, retx=TRUE, scale=TRUE)
+facesPCA <- facesPCAaux$x[,1:200]
 
-preProc <- preProcess(faces,method="pca")
-facesPCA <- predict(preProc,faces)
 toc()
 
-cat(c("\nMinimum number of features for 95% accuracy with PCA: ", preProc$numComp, " features.\n"))
-cat("\n")
-
-preProc <- preProcess(faces,method="pca", pcaComp = 5)
-facesPCA <- predict(preProc,faces)
+# ===== DIMINUINDO O NÚMERO DE ATRIBUTOS COM MDS =====
 
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
 
-kMDS <- 5
-# kMDS <- preProc$numComp
+kMDS <- 200
 
 facesMDS <- cmdscale(dist(faces), k=kMDS)
 toc()
 
-# plot(1:4096,facesPCA$std)
-
 cat(c("\nNumber of features for MDS reduction: ", kMDS, " features.\n"))
 cat("\n")
 
+
+# ===== GERANDO SETS DE TREINO E TESTE =====
 
 # Get random for tests
 cat(">> Creating random training and test datasets...")
@@ -201,33 +189,33 @@ for(i in seq(10)){
 }
 cat("\n")
 
-cat(">> Training with KNN and full features... ")
-tic("Done")
-
-resultKNN <- c()
-
-for (i in seq(10)) {
-    separation <- knn(xtreino,xteste,ytreino,k=i)
-    resultKNN <- rbind(resultKNN,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
-}
-
-colnames(resultKNN) <- c("N","Accuracy")
-
-toc()
-
-meanResultKNN <- mean(resultKNN[,2])
-results[["KNNFULL"]] <- resultKNN
-
-cat("\nAccuracy of KNN and full features for diferents N neighbours")
-cat("\n============================================================")
-cat("\n   N        Acc(%)  \n")
-for(i in seq(10)){
-    cat(c("\n  ",i, "     ", resultKNN[i,2], "  "))
-}
-cat("\n")
-
-cat(">> Training with Bayes and PCA... ")
-tic("Done")
+# cat(">> Training with KNN and full features... ")
+# tic("Done")
+# 
+# resultKNN <- c()
+# 
+# for (i in seq(10)) {
+#     separation <- knn(xtreino,xteste,ytreino,k=i)
+#     resultKNN <- rbind(resultKNN,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
+# }
+# 
+# colnames(resultKNN) <- c("N","Accuracy")
+# 
+# toc()
+# 
+# meanResultKNN <- mean(resultKNN[,2])
+# results[["KNNFULL"]] <- resultKNN
+# 
+# cat("\nAccuracy of KNN and full features for diferents N neighbours")
+# cat("\n============================================================")
+# cat("\n   N        Acc(%)  \n")
+# for(i in seq(10)){
+#     cat(c("\n  ",i, "     ", resultKNN[i,2], "  "))
+# }
+# cat("\n")
+# 
+# cat(">> Training with Bayes and PCA... ")
+# tic("Done")
 
 # theta <- rep(1.,ncol(xtreinoPCA))
 # max.train.iter <- 12
@@ -236,22 +224,23 @@ tic("Done")
 # 
 # predError(resultsBayesPCA)
 
-pred <- bayes(xtreinoPCA, ytreino, nSamplesTest, xtestePCA, yteste)
+cat(">> Training with Bayes and PCA... ")
+tic("Done")
 
-cat("\n>> Pred\n")
-cat(pred)
-cat("\n")
+predPCA <- bayes(xtreinoPCA, ytreino, nSamplesTest, xtestePCA, yteste)
 
+results[["BayesPCA"]] <- predPCA
 
 toc()
 
 cat(">> Training with Bayes and MDS... ")
 tic("Done")
 
-toc()
+predMDS <- bayes(xtreinoMDS, ytreino, nSamplesTest, xtesteMDS, yteste)
 
-cat(">> Training with Bayes and full features... ")
-tic("Done")
+results[["BayesMDS"]] <- predMDS
+
+toc()
 
 toc()
 
