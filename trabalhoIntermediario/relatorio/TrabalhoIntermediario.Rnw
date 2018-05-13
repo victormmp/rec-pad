@@ -59,7 +59,75 @@ Para a execução da tarefa, algumas funções auxiliares foram implementadas. A
 
 <<echo=T>>=
 
-#test
+checkAcc <- function(result, correct) {
+    
+    if (length(result) != length(correct)){
+        cat("[checkAcc Error] Sizes of result and correct are diferent! Please check pparameters.")
+        return(NULL)
+    }
+    
+    count <- 0
+    for (i in seq(length(result))) {
+        if (result[i] == correct[i]) count <- count + 1
+    }
+    
+    percCorrect <- count / length(result) * 100
+    
+    return(c(count, percCorrect))
+}
+
+MostraImagem <- function( x )
+{
+    
+    img <- matrix( x, nrow=64 )
+    cor <- rev( gray(50:1/50) )
+    image( rotate( img ), col=cor )
+}
+# MostraImagem( faces[1,] )
+
+pdfnvar <- function(x,m,K,n) {
+    
+    y <- ((1/(((2*pi)^n*(det(K)))))*exp(-0.5*(t(x-m)%*%(pseudoinverse(K))%*%(x-m))))
+    return(y)
+    
+}
+
+bayes <- function(xtreino, ytreino, nSamples, xteste, yteste) {
+    
+    Mcov <- list()
+    nClass <- nrow(xtreino) / nSamples
+    classe <- 1
+    meansList <- list()
+    nFeatures <- ncol(xtreino)
+    
+    for (i in seq(1,nrow(xtreino), nSamples)) {
+        Mcov[[classe]] <- cov(xtreino[i:(i+nSamples-1),])
+        meansList[[classe]] <- colMeans(xtreino[i:(nSamples-1),])
+        classe <- classe + 1
+    }
+    
+    pdf <- matrix(nrow = nrow(xteste), ncol = nClass)
+    
+    for (i in seq(nrow(xteste))) {
+        for (j in seq(nClass)) {
+            pdf[i,j] <- pdfnvar(xteste[i,],meansList[[j]],Mcov[[j]],nFeatures)
+        }
+    }
+    
+    predResult <- matrix(nrow = nrow(pdf))
+    predResult <- apply(pdf, 1,which.max)
+    
+    results <- list()
+    checkAcc <- predResult - yteste
+    win <- sum(checkAcc == 0)
+    predWin <- win / length(yteste) * 100
+    
+    results[["predResult"]] <- predResult
+    results[["predWin"]] <- predWin
+    
+    
+    return(results)
+}
 
 @
 
@@ -176,8 +244,34 @@ for(r in seq(1,numClasses,numAmostras)) {
 
 \subsection{Classificando com KNN e PCA}
 
-Começando então à realizar as classificações, foi feito uso da função \textit{knn} para a classificação das amostras de teste, com base nos resultados oferecidos pelas amostras de terinamento. Como a função nos permite escolher o númedo de vizinhos a ser considerados para o correto estabelecimento
+Começando então à realizar as classificações, foi feito uso da função \textit{knn} para a classificação das amostras de teste, com base nos resultados oferecidos pelas amostras de treinamento. Como a função nos permite escolher o número de vizinhos a ser considerados para o correto estabelecimento, foram relizadas 10 rotinas de treinamento, variando esse parâmetro entre 1 e 10. A rotina utilizada pode ser vista a seguir.
 
+<<echo=T>>=
+
+resultKNNPCA <- c()
+
+for (i in seq(10)) {
+    separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
+    resultKNNPCA <- rbind(resultKNNPCA,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
+}
+
+colnames(resultKNNPCA) <- c("N","Accuracy")
+
+meanResultKNNPCA <- mean(resultKNNPCA[,2])
+results[["KNNPCA"]] <- resultKNNPCA
+
+@
+
+
+Os resultados da execução deste algoritmo podem ser vistos a seguir.
+
+<<echo=F>>=
+
+print(results$KNNPCA)
+
+@
+
+\subsection{Classificando com KNN e MDS}
 
 
 \end{document}

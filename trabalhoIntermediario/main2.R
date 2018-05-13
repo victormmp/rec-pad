@@ -70,7 +70,7 @@ results <- list()
 tic("Done")
 
 facesPCAaux <- prcomp(faces, center=TRUE, retx=TRUE, scale=TRUE)
-facesPCA <- facesPCAaux$x[,1:200]
+facesPCA <- facesPCAaux$x[,1:120]
 
 toc()
 
@@ -79,7 +79,7 @@ toc()
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
 
-kMDS <- 200
+kMDS <- 120
 
 facesMDS <- cmdscale(dist(faces), k=kMDS)
 toc()
@@ -189,41 +189,6 @@ for(i in seq(10)){
 }
 cat("\n")
 
-# cat(">> Training with KNN and full features... ")
-# tic("Done")
-# 
-# resultKNN <- c()
-# 
-# for (i in seq(10)) {
-#     separation <- knn(xtreino,xteste,ytreino,k=i)
-#     resultKNN <- rbind(resultKNN,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
-# }
-# 
-# colnames(resultKNN) <- c("N","Accuracy")
-# 
-# toc()
-# 
-# meanResultKNN <- mean(resultKNN[,2])
-# results[["KNNFULL"]] <- resultKNN
-# 
-# cat("\nAccuracy of KNN and full features for diferents N neighbours")
-# cat("\n============================================================")
-# cat("\n   N        Acc(%)  \n")
-# for(i in seq(10)){
-#     cat(c("\n  ",i, "     ", resultKNN[i,2], "  "))
-# }
-# cat("\n")
-# 
-# cat(">> Training with Bayes and PCA... ")
-# tic("Done")
-
-# theta <- rep(1.,ncol(xtreinoPCA))
-# max.train.iter <- 12
-# 
-# resultsBayesPCA <- vbmp(xtreinoPCA,ytreino,xtestePCA,yteste,theta, control=list(bThetaEstimate=T, bMonitor=T, maxIts=max.train.iter))
-# 
-# predError(resultsBayesPCA)
-
 cat(">> Training with Bayes and PCA... ")
 tic("Done")
 
@@ -241,27 +206,6 @@ predMDS <- bayes(xtreinoMDS, ytreino, nSamplesTest, xtesteMDS, yteste)
 results[["BayesMDS"]] <- predMDS
 
 toc()
-
-toc()
-
-#==============================
-
-# Funcao PCA
-# prcomp(xtreino, scale=TRUE, retx=TRUE)
-
-# preProc <- preProcess(log10(spam[,-58]+1),method="pca",pcaComp=2)
-# spamPC <- predict(preProc,log10(spam[,-58]+1))
-# plot(spamPC[,1],spamPC[,2],col=typeColor)
-
-# Funcao MDS
-# cmdscale( xtreino, k=2)
-
-# Funcao KNN
-# knn(xtreino,xteste,ytreino,k=3)
-
-# funcao Bayes
-# 
-
 
 cat("\n===== Routine Finished =====\n")
 toc()

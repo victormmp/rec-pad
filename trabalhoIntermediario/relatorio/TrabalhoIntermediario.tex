@@ -43,8 +43,73 @@ Para a execução da tarefa, algumas funções auxiliares foram implementadas. A
 
 \begin{Schunk}
 \begin{Sinput}
+> checkAcc <- function(result, correct) {
++     
++     if (length(result) != length(correct)){
++         cat("[checkAcc Error] Sizes of result and correct are diferent! Please check pparameters.")
++         return(NULL)
++     }
++     
++     count <- 0
++     for (i in seq(length(result))) {
++         if (result[i] == correct[i]) count <- count + 1
++     }
++     
++     percCorrect <- count / length(result) * 100
++     
++     return(c(count, percCorrect))
++ }
+> MostraImagem <- function( x )
++ {
++     
++     img <- matrix( x, nrow=64 )
++     cor <- rev( gray(50:1/50) )
++     image( rotate( img ), col=cor )
++ }
+> # MostraImagem( faces[1,] )
 > 
-> #test
+> pdfnvar <- function(x,m,K,n) {
++     
++     y <- ((1/(((2*pi)^n*(det(K)))))*exp(-0.5*(t(x-m)%*%(pseudoinverse(K))%*%(x-m))))
++     return(y)
++     
++ }
+> bayes <- function(xtreino, ytreino, nSamples, xteste, yteste) {
++     
++     Mcov <- list()
++     nClass <- nrow(xtreino) / nSamples
++     classe <- 1
++     meansList <- list()
++     nFeatures <- ncol(xtreino)
++     
++     for (i in seq(1,nrow(xtreino), nSamples)) {
++         Mcov[[classe]] <- cov(xtreino[i:(i+nSamples-1),])
++         meansList[[classe]] <- colMeans(xtreino[i:(nSamples-1),])
++         classe <- classe + 1
++     }
++     
++     pdf <- matrix(nrow = nrow(xteste), ncol = nClass)
++     
++     for (i in seq(nrow(xteste))) {
++         for (j in seq(nClass)) {
++             pdf[i,j] <- pdfnvar(xteste[i,],meansList[[j]],Mcov[[j]],nFeatures)
++         }
++     }
++     
++     predResult <- matrix(nrow = nrow(pdf))
++     predResult <- apply(pdf, 1,which.max)
++     
++     results <- list()
++     checkAcc <- predResult - yteste
++     win <- sum(checkAcc == 0)
++     predWin <- win / length(yteste) * 100
++     
++     results[["predResult"]] <- predResult
++     results[["predWin"]] <- predWin
++     
++     
++     return(results)
++ }
 > 
 \end{Sinput}
 \end{Schunk}
@@ -92,12 +157,14 @@ Em seguida, foi realizada a diminuição do número de atributos da base de dado
 \begin{Schunk}
 \begin{Sinput}
 > facesPCAaux <- prcomp(faces, center=TRUE, retx=TRUE, scale=TRUE)
-> facesPCA <- facesPCAaux$x[,1:5]
+> facesPCA <- facesPCAaux$x[,1:200]
 > 
 \end{Sinput}
 \end{Schunk}
 
-Observando a implementação da função do classificador de Bayes, e da geração de pdfs para amostras multivariáveis, uma matriz de correlação invertível é gerada apenas se o número de linhas for menor ou igual ao número de colunas, única possibilidade que não gera uma matriz singular quando da execução da função \textit{solve}. Como são 10 amostras de cada classe, e para o trabalho será utilizada 5 amostras para treino e 5 para testes, o número de features máximo que pode ser utilizado, para o correto funcionamento do algoritmo do classificador de Bayes, é de 5 features.
+Observando a implementação da função do classificador de Bayes, e da geração de pdfs para amostras multivariáveis, uma matriz de correlação invertível é gerada apenas se o número de linhas for menor ou igual ao número de colunas, única possibilidade que não gera uma matriz singular quando da execução da função \textit{solve}. Como são 10 amostras de cada classe, e para o trabalho será utilizada 5 amostras para treino e 5 para testes, o número de features máximo que pode ser utilizado, desta forma, para o correto funcionamento do algoritmo do classificador de Bayes, é de 4 features.
+
+Porém, considerando matrizes não invertíveis, no momento do cálculo do pdf, podemos fazer uso de uma matriz pseudoinversa, através da função \textit{pseudoinverse} do pacote \textit{coropcor}. Isto nos permite utilizar mais features do que através da implementação anterior. Portanto, para as rotinas de trainamento, faremos uso de 200 features, metade do que oferecido como resultado da diminuição utilizando PCA.
 
 \subsection{Diminuindo o número de atributos com MDS}
 
@@ -105,7 +172,7 @@ O mesmo procedimento, e a mesma limitação do número de features foi realizado
 
 \begin{Schunk}
 \begin{Sinput}
-> kMDS <- 5
+> kMDS <- 200
 > facesMDS <- cmdscale(dist(faces), k=kMDS)
 > 
 \end{Sinput}
@@ -153,7 +220,44 @@ Como dito anteriormente, para o treinamento e classificação pelos algoritmos, 
 \end{Sinput}
 \end{Schunk}
 
+\subsection{Classificando com KNN e PCA}
 
+Começando então à realizar as classificações, foi feito uso da função \textit{knn} para a classificação das amostras de teste, com base nos resultados oferecidos pelas amostras de treinamento. Como a função nos permite escolher o número de vizinhos a ser considerados para o correto estabelecimento, foram relizadas 10 rotinas de treinamento, variando esse parâmetro entre 1 e 10. A rotina utilizada pode ser vista a seguir.
+
+\begin{Schunk}
+\begin{Sinput}
+> resultKNNPCA <- c()
+> for (i in seq(10)) {
++     separation <- knn(xtreinoPCA,xtestePCA,ytreino,k=i)
++     resultKNNPCA <- rbind(resultKNNPCA,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
++ }
+> colnames(resultKNNPCA) <- c("N","Accuracy")
+> meanResultKNNPCA <- mean(resultKNNPCA[,2])
+> results[["KNNPCA"]] <- resultKNNPCA
+> 
+\end{Sinput}
+\end{Schunk}
+
+
+Os resultados da execução deste algoritmo podem ser vistos a seguir.
+
+\begin{Schunk}
+\begin{Soutput}
+       N Accuracy
+ [1,]  1     92.5
+ [2,]  2     82.0
+ [3,]  3     79.5
+ [4,]  4     77.0
+ [5,]  5     74.5
+ [6,]  6     68.5
+ [7,]  7     68.5
+ [8,]  8     62.5
+ [9,]  9     60.0
+[10,] 10     62.5
+\end{Soutput}
+\end{Schunk}
+
+\subsection{Classificando com KNN e MDS}
 
 
 \end{document}
