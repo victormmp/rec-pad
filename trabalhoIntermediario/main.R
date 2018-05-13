@@ -9,10 +9,13 @@ cat("===== Starting Routine =====\n")
 require(RnavGraphImageData)
 # install.packages("class")
 # install.packages("stats")
+# source("http://bioconductor.org/biocLite.R") 
+# biocLite("vbmp")
 library("class")
 library("stats")
 library("caret")
 library("tictoc")
+library(vbmp)
 
 tic("Total elapsed time")
 
@@ -28,6 +31,11 @@ cat(">> Importing methods...\n")
 source("functionsImagem.R")
 source("checkAccFunction.R")
 
+cat(">> Normalizing dataset... \n")
+tic("Done")
+
+faces <- scalar1(faces)
+toc()
 
 #Gerando os rotulos
 cat(">> Generating data labels...")
@@ -79,7 +87,7 @@ cat("\n")
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
 
-kMDS <- 300
+kMDS <- 200
 # kMDS <- preProc$numComp
 
 facesMDS <- cmdscale(dist(faces), k=kMDS)
@@ -103,7 +111,9 @@ seqN <- sample(numAmostras)
 porcAmostTrain <- 0.3
 
 N <- seqN[1:(porcAmostTrain*numAmostras)]
+nSamplesTrain <- length(N)
 n <- seqN[(porcAmostTrain*numAmostras+1):numAmostras]
+nSamplesTest <- length(n)
 
 xtreino <- c()
 xtreinoPCA <- c()
@@ -215,6 +225,20 @@ cat("\n")
 
 cat(">> Training with Bayes and PCA... ")
 tic("Done")
+
+# theta <- rep(1.,ncol(xtreinoPCA))
+# max.train.iter <- 12
+# 
+# resultsBayesPCA <- vbmp(xtreinoPCA,ytreino,xtestePCA,yteste,theta, control=list(bThetaEstimate=T, bMonitor=T, maxIts=max.train.iter))
+# 
+# predError(resultsBayesPCA)
+
+pred <- bayes(xtreinoPCA, ytreino, nSamplesTest, xtestePCA, yteste)
+
+cat("\n>> Pred\n")
+cat(pred)
+cat("\n")
+
 
 toc()
 
