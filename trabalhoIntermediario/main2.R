@@ -228,5 +228,7 @@ for(i in seq(length(facesPCAaux$sdev))) {
     soma <- c(soma, valor)
 }
 
+plot(soma)
+
 cat("\n===== Routine Finished =====\n")
 toc()

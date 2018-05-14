@@ -256,19 +256,16 @@ results[["KNNMDS"]] <- resultKNNMDS
 O resultado para este treinamento pode ser visto a seguir.
 
 <<echo=F>>=
-
 print(results[["KNNMDS"]])
-
 @
 
-\subsection{Classificaçãoutilizando Bayes e PCA}
+\subsection{Classificação utilizando Bayes e PCA}
 
-A regra de classificação de Bayes, que minimiza o risco  de classificação, realiza a decisão se uma determinada amostra pertence ou não à uma classe, conforme à análise comparativa das probabilidades posteriores de pertencimento da mesma entre todas as outras. A amostra pertencerá à classe com maior probabilidade naquele ponto, se considerarmos que cada uma de suas n features equivale a um ponto em um sistema $R^n$.
+A regra de classificação de Bayes, que minimiza o risco  de classificação, realiza a decisão se uma determinada amostra pertence ou não à uma classe, conforme à análise comparativa das probabilidades posteriores de pertencimento da mesma entre todas as outras. A amostra pertencerá à classe com maior probabilidade naquele ponto, se considerarmos que cada uma de suas n features equivale a um ponto em um sistema $Rn$.
 
-A função utilizada para a classificação de Bayes foi a naive_bayes, do pacote naivebayes, pode ser vista à seguir.
+A função utilizada para a classificação de Bayes foi a naive\_bayes, do pacote naivebayes, pode ser vista à seguir.
 
 <<echo=T>>=
-
 pred2 <- naive_bayes(x=xtreinoPCA, y=ytreino, useKernel =TRUE)
 predr <- predict(pred2,xtestePCA)
 resultBayesPCA <- checkAcc(predr,yteste)
@@ -276,7 +273,7 @@ resultBayesPCA <- checkAcc(predr,yteste)
 
 \subsection{Classificando com Bayes e MDS}
 
-A classificação com a função \textit{naive_bayes} com o conjunto de classes reduzido com MDS utiliza do trecho de código a seguir.
+A classificação com a função \textit{naive\_bayes} com o conjunto de classes reduzido com MDS utiliza do trecho de código a seguir.
 
 <<echo=T>>=
 pred3 <- naive_bayes(x=xtreinoMDS, y=ytreino, useKernel =TRUE)
@@ -288,7 +285,6 @@ resultBayesMDS <- checkAcc(predr,yteste)
 
 Comparando, portanto as duas classificações utilizando o classificador de Bayes, tanto para a redução de parêmetros através de PCA quanto para a utilizando MDS, temos os seguintes resultados:
 
-O
 <<echo=F>>=
 resultBayes <- rbind(resultBayesPCA,resultBayesMDS)
 
