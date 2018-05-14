@@ -47,6 +47,8 @@ require(RnavGraphImageData)
 # biocLite("vbmp")
 library("class")
 library("stats")
+library("corpcor")
+library("naivebayes")
 library(vbmp)
 
 results <- list()
@@ -83,7 +85,6 @@ MostraImagem <- function( x )
     cor <- rev( gray(50:1/50) )
     image( rotate( img ), col=cor )
 }
-# MostraImagem( faces[1,] )
 
 pdfnvar <- function(x,m,K,n) {
     
@@ -91,44 +92,6 @@ pdfnvar <- function(x,m,K,n) {
     return(y)
     
 }
-
-bayes <- function(xtreino, ytreino, nSamples, xteste, yteste) {
-    
-    Mcov <- list()
-    nClass <- nrow(xtreino) / nSamples
-    classe <- 1
-    meansList <- list()
-    nFeatures <- ncol(xtreino)
-    
-    for (i in seq(1,nrow(xtreino), nSamples)) {
-        Mcov[[classe]] <- cov(xtreino[i:(i+nSamples-1),])
-        meansList[[classe]] <- colMeans(xtreino[i:(nSamples-1),])
-        classe <- classe + 1
-    }
-    
-    pdf <- matrix(nrow = nrow(xteste), ncol = nClass)
-    
-    for (i in seq(nrow(xteste))) {
-        for (j in seq(nClass)) {
-            pdf[i,j] <- pdfnvar(xteste[i,],meansList[[j]],Mcov[[j]],nFeatures)
-        }
-    }
-    
-    predResult <- matrix(nrow = nrow(pdf))
-    predResult <- apply(pdf, 1,which.max)
-    
-    results <- list()
-    checkAcc <- predResult - yteste
-    win <- sum(checkAcc == 0)
-    predWin <- win / length(yteste) * 100
-    
-    results[["predResult"]] <- predResult
-    results[["predWin"]] <- predWin
-    
-    
-    return(results)
-}
-
 @
 
 \section{Execução do código}
@@ -178,13 +141,13 @@ Em seguida, foi realizada a diminuição do número de atributos da base de dado
 <<echo=T>>=
 
 facesPCAaux <- prcomp(faces, center=TRUE, retx=TRUE, scale=TRUE)
-facesPCA <- facesPCAaux$x[,1:200]
+facesPCA <- facesPCAaux$x[,1:123]
 
 @
 
-Observando a implementação da função do classificador de Bayes, e da geração de pdfs para amostras multivariáveis, uma matriz de correlação invertível é gerada apenas se o número de linhas for menor ou igual ao número de colunas, única possibilidade que não gera uma matriz singular quando da execução da função \textit{solve}. Como são 10 amostras de cada classe, e para o trabalho será utilizada 5 amostras para treino e 5 para testes, o número de features máximo que pode ser utilizado, desta forma, para o correto funcionamento do algoritmo do classificador de Bayes, é de 4 features.
+%Observando a implementação da função do classificador de Bayes, e da geração de pdfs para amostras multivariáveis, uma matriz de correlação invertível é gerada apenas se o número de linhas for menor ou igual ao número de colunas, única possibilidade que não gera uma matriz singular quando da execução da função \textit{solve}. Como são 10 amostras de cada classe, e para o trabalho será utilizada 5 amostras para treino e 5 para testes, o número de features máximo que pode ser utilizado, desta forma, para o correto funcionamento do algoritmo do classificador de Bayes, é de 4 features
 
-Porém, considerando matrizes não invertíveis, no momento do cálculo do pdf, podemos fazer uso de uma matriz pseudoinversa, através da função \textit{pseudoinverse} do pacote \textit{coropcor}. Isto nos permite utilizar mais features do que através da implementação anterior. Portanto, para as rotinas de trainamento, faremos uso de 200 features, metade do que oferecido como resultado da diminuição utilizando PCA.
+Para a implementação do algoritmo utilizado, será feito uso da quantidade de features mínimas que haviam sido apontadas anteriormente pelo algoritmo preProcess, do pacote \textit{caret}, de 123 features.
 
 \subsection{Diminuindo o número de atributos com MDS}
 
@@ -192,7 +155,7 @@ O mesmo procedimento, e a mesma limitação do número de features foi realizado
 
 <<echo=T>>=
 
-kMDS <- 200
+kMDS <- 123
 facesMDS <- cmdscale(dist(faces), k=kMDS)
 
 @
@@ -267,11 +230,128 @@ Os resultados da execução deste algoritmo podem ser vistos a seguir.
 
 <<echo=F>>=
 
-print(results$KNNPCA)
+print(results[["KNNPCA"]])
 
 @
 
 \subsection{Classificando com KNN e MDS}
+
+Realizando a mesma classificação anterior, agora porém para os dados reduzidos através de MDS. O algoritimo utilizado é idêntico ao anterior, como pode ser visto a seguir.
+
+<<echo = T>>=
+
+resultKNNMDS <- c()
+
+for (i in seq(10)) {
+    separation <- knn(xtreinoMDS,xtesteMDS,ytreino,k=i)
+    resultKNNMDS <- rbind(resultKNNMDS,matrix(c(i,(checkAcc(separation, yteste)[2])),ncol = 2))
+}
+
+colnames(resultKNNMDS) <- c("N","Accuracy")
+
+meanResultKNNMDS <- mean(resultKNNMDS[,2])
+results[["KNNMDS"]] <- resultKNNMDS
+@
+
+O resultado para este treinamento pode ser visto a seguir.
+
+<<echo=F>>=
+
+print(results[["KNNMDS"]])
+
+@
+
+\subsection{Classificaçãoutilizando Bayes e PCA}
+
+A regra de classificação de Bayes, que minimiza o risco  de classificação, realiza a decisão se uma determinada amostra pertence ou não à uma classe, conforme à análise comparativa das probabilidades posteriores de pertencimento da mesma entre todas as outras. A amostra pertencerá à classe com maior probabilidade naquele ponto, se considerarmos que cada uma de suas n features equivale a um ponto em um sistema $R^n$.
+
+A função utilizada para a classificação de Bayes foi a naive_bayes, do pacote naivebayes, pode ser vista à seguir.
+
+<<echo=T>>=
+
+pred2 <- naive_bayes(x=xtreinoPCA, y=ytreino, useKernel =TRUE)
+predr <- predict(pred2,xtestePCA)
+resultBayesPCA <- checkAcc(predr,yteste)
+@
+
+\subsection{Classificando com Bayes e MDS}
+
+A classificação com a função \textit{naive_bayes} com o conjunto de classes reduzido com MDS utiliza do trecho de código a seguir.
+
+<<echo=T>>=
+pred3 <- naive_bayes(x=xtreinoMDS, y=ytreino, useKernel =TRUE)
+predr <- predict(pred3,xtesteMDS)
+resultBayesMDS <- checkAcc(predr,yteste)
+@
+
+\subsection{Resultados com Bayes}
+
+Comparando, portanto as duas classificações utilizando o classificador de Bayes, tanto para a redução de parêmetros através de PCA quanto para a utilizando MDS, temos os seguintes resultados:
+
+O
+<<echo=F>>=
+resultBayes <- rbind(resultBayesPCA,resultBayesMDS)
+
+colnames(resultBayes) <- c("N","Accuracy")
+rownames(resultBayes) <- c("PCA","MDS")
+
+results[["resultsBayes"]] <- resultBayes
+
+print(results[["resultsBayes"]])
+
+@
+
+\section{Avaliação dos Resultados}
+
+Anteriormente, durante o desenvolviemento do trabalho, houve a tentativa de utilização de uma roina própria de implementação do classificador de bayes. A função implementada foi a seguinte:
+
+<<echo=T>>=
+
+bayes <- function(xtreino, ytreino, nSamples, xteste, yteste) {
+    
+    Mcov <- list()
+    nClass <- nrow(xtreino) / nSamples
+    classe <- 1
+    meansList <- list()
+    nFeatures <- ncol(xtreino)
+    
+    for (i in seq(1,nrow(xtreino), nSamples)) {
+        Mcov[[classe]] <- cov(xtreino[i:(i+nSamples-1),])
+        meansList[[classe]] <- colMeans(xtreino[i:(nSamples-1),])
+        classe <- classe + 1
+    }
+    
+    pdf <- matrix(nrow = nrow(xteste), ncol = nClass)
+    
+    for (i in seq(nrow(xteste))) {
+        for (j in seq(nClass)) {
+            pdf[i,j] <- pdfnvar(xteste[i,],meansList[[j]],Mcov[[j]],nFeatures)
+        }
+    }
+    
+    predResult <- matrix(nrow = nrow(pdf))
+    predResult <- apply(pdf, 1,which.max)
+    
+    results <- list()
+    checkAcc <- predResult - yteste
+    win <- sum(checkAcc == 0)
+    predWin <- win / length(yteste) * 100
+    
+    results[["predResult"]] <- predResult
+    results[["predWin"]] <- predWin
+    
+    
+    return(results)
+}
+
+@
+
+Observando a implementação da função do classificador de Bayes, e da geração de pdfs para amostras multivariáveis, uma matriz de correlação invertível é gerada apenas se o número de linhas for menor ou igual ao número de colunas, única possibilidade que não gera uma matriz singular quando da execução da função \textit{solve}. Como são 10 amostras de cada classe, e para o trabalho será utilizada 5 amostras para treino e 5 para testes, o número de features máximo que pode ser utilizado, desta forma, para o correto funcionamento do algoritmo do classificador de Bayes, é de 4 features.
+
+Porém, a utilização de uma quantidade tão inferior de parâmetros compromete a classificação correta das amostras.
+
+Um ponto de destaque observando os algoritmos é a diminuição da acurácia do algoritmo KNN conforme o número de vizinhos selecionados aumenta. Este comportamento parece ser contra-intuitivo, uma vez que o senso comum nos diz que quanto mais vizinhos idênticos a um determinado ponto, maior a confiabilidade do mesmo naquele resultado. Uma das explicações possíveis para tal é a possibilidade de haver sobreposição de amostras de treinamento dentro do espaço que as contém, o que nos indica que quanto amis vizinhos selecionarmos para confirmar a classe de uma amostra de teste, maiores as chances de selecionarmos pontos de classes erradas.
+
 
 
 \end{document}

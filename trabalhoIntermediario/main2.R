@@ -70,7 +70,7 @@ results <- list()
 tic("Done")
 
 facesPCAaux <- prcomp(faces, center=TRUE, retx=TRUE, scale=TRUE)
-facesPCA <- facesPCAaux$x[,1:120]
+facesPCA <- facesPCAaux$x[,1:200]
 
 toc()
 
@@ -79,7 +79,7 @@ toc()
 cat(">> Decreasing number of features with MDS... ")
 tic("Done")
 
-kMDS <- 120
+kMDS <- 200
 
 facesMDS <- cmdscale(dist(faces), k=kMDS)
 toc()
@@ -192,20 +192,41 @@ cat("\n")
 cat(">> Training with Bayes and PCA... ")
 tic("Done")
 
-predPCA <- bayes(xtreinoPCA, ytreino, nSamplesTest, xtestePCA, yteste)
+pred2 <- naive_bayes(x=xtreinoPCA, y=ytreino, useKernel =TRUE)
 
-results[["BayesPCA"]] <- predPCA
+predr <- predict(pred2,xtestePCA)
+
+resultBayesPCA <- checkAcc(predr,yteste)
+
 
 toc()
 
 cat(">> Training with Bayes and MDS... ")
 tic("Done")
 
-predMDS <- bayes(xtreinoMDS, ytreino, nSamplesTest, xtesteMDS, yteste)
+pred3 <- naive_bayes(x=xtreinoMDS, y=ytreino, useKernel =TRUE)
 
-results[["BayesMDS"]] <- predMDS
+predr <- predict(pred3,xtesteMDS)
+
+resultBayesMDS <- checkAcc(predr,yteste)
 
 toc()
+
+resultBayes <- rbind(resultBayesPCA,resultBayesMDS)
+
+colnames(resultBayes) <- c("N","Accuracy")
+rownames(resultBayes) <- c("PCA","MDS")
+
+results[["resultsBayes"]] <- resultBayes
+#=============================================
+
+
+soma <- c()
+valor <- 0
+for(i in seq(length(facesPCAaux$sdev))) {
+    valor <- valor + facesPCAaux$sdev[i]
+    soma <- c(soma, valor)
+}
 
 cat("\n===== Routine Finished =====\n")
 toc()
