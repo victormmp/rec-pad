@@ -57,25 +57,28 @@ pdfnvar <- function(x,m,K,n) {
 
 cat(">> Creating samples\n")
 
-nSamples <- 1000
+nSamples <- 100
 # Number of clusters
-k <- 3
+k <- 4
 # Max Iteration
 maxit <- 100
 
 xg1 <- matrix(rnorm(nSamples,mean=2,sd=1),ncol=2)
-xg2 <- matrix(rnorm(nSamples,mean=4,sd=0.5),ncol=2)
-xg3 <- matrix(rnorm(nSamples,mean=0,sd=0.6),ncol=2)
+xg2 <- matrix(rnorm(nSamples,mean=4,sd=0.8),ncol=2)
+xg3 <- matrix(rnorm(nSamples,mean=0,sd=0.3),ncol=2)
+xg4 <- matrix(rnorm(nSamples,mean=-2,sd=2),ncol=2)
 
-X <- rbind(xg1,xg2,xg3)
+X <- rbind(xg1,xg2,xg3,xg4)
 
 plotLim <- c(-10,10)
 
-# plot(xg1[,1],xg1[,2],xlim=plotLim,ylim=plotLim)
-# par(new=T)
-# plot(xg2[,1],xg2[,2],xlim=plotLim,ylim=plotLim)
-# par(new=T)
-# plot(xg3[,1],xg3[,2],xlim=plotLim,ylim=plotLim)
+plot(xg1[,1],xg1[,2],xlim=plotLim,ylim=plotLim)
+par(new=T)
+plot(xg2[,1],xg2[,2],xlim=plotLim,ylim=plotLim)
+par(new=T)
+plot(xg3[,1],xg3[,2],xlim=plotLim,ylim=plotLim)
+par(new=T)
+plot(xg4[,1],xg4[,2],xlim=plotLim,ylim=plotLim)
 
 cat(">> Calculatint centers\n")
 McList <- kMeans(X,k,maxit)
@@ -89,25 +92,25 @@ for(i in seq(k)) {
   xCluster1[[i]] <- ici
 }
 
-# ixg1 <- which(Clustx == 1)
-# ixg2 <- which(Clustx == 2)
-# ixg3 <- which(Clustx == 3)
-
 print(Mc)
 
-# plot(X[ixg1,1],X[ixg1,2],xlim=plotLim,ylim=plotLim,col=2)
-# par(new=T)
-# plot(X[ixg2,1],X[ixg2,2],xlim=plotLim,ylim=plotLim,col=3)
-# par(new=T)
-# plot(X[ixg3,1],X[ixg3,2],xlim=plotLim,ylim=plotLim,col=4)
-# par(new=T)
-# plot(Mc[1,1],Mc[1,2],xlim=plotLim,ylim=plotLim,col=1,pch=15)
-# par(new=T)
-# plot(Mc[2,1],Mc[2,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
+plot(X[xCluster1[[1]],1],X[xCluster1[[1]],2],xlim=plotLim,ylim=plotLim,col=1)
+par(new=T)
+plot(X[xCluster1[[2]],1],X[xCluster1[[2]],2],xlim=plotLim,ylim=plotLim,col=2)
+par(new=T)
+plot(X[xCluster1[[3]],1],X[xCluster1[[3]],2],xlim=plotLim,ylim=plotLim,col=3)
+par(new=T)
+plot(X[xCluster1[[4]],1],X[xCluster1[[4]],2],xlim=plotLim,ylim=plotLim,col=4)
+par(new=T)
+plot(Mc[1,1],Mc[1,2],xlim=plotLim,ylim=plotLim,col=1,pch=15)
+par(new=T)
+plot(Mc[2,1],Mc[2,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
+par(new=T)
+plot(Mc[3,1],Mc[3,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
+par(new=T)
+plot(Mc[4,1],Mc[4,2],xlim=plotLim,ylim=plotLim,col=4, pch=15)
 
 # http://www.sthda.com/english/wiki/r-plot-pch-symbols-the-different-point-shapes-available-in-r
-
-
 
 ###########
 
@@ -128,6 +131,10 @@ M3 <- matrix(nrow=lseq,ncol=lseq)
 m3 <- colMeans(X[xCluster1[[3]],])
 K3 <- cov(X[xCluster1[[3]],])
 
+M4 <- matrix(nrow=lseq,ncol=lseq)
+m4 <- colMeans(X[xCluster1[[4]],])
+K4 <- cov(X[xCluster1[[4]],])
+
 
 M12 <- matrix(nrow=lseq,ncol=lseq)
 
@@ -143,14 +150,16 @@ for (i in 1:lseq) {
     M1[i,j] <- pdfnvar(x1x2,m1,K1,2)
     M2[i,j] <- pdfnvar(x1x2,m2,K2,2)
     M3[i,j] <- pdfnvar(x1x2,m3,K3,2)
+    M4[i,j] <- pdfnvar(x1x2,m4,K4,2)
   }
 }
 
 pi1 <- length(xCluster1[[1]]) / (length(Clustx))
 pi2 <- length(xCluster1[[2]]) / (length(Clustx))
 pi3 <- length(xCluster1[[3]]) / (length(Clustx))
+pi4 <- length(xCluster1[[4]]) / (length(Clustx))
 
-M12 <- pi2*M1 + pi2*M2 + pi3*M3
+M12 <- pi2*M1 + pi2*M2 + pi3*M3 + pi4*M4
 
 # persp3d(seqx1x2,seqx1x2,M1,col='red')
 # persp3d(seqx1x2,seqx1x2,M2,col='blue',add=TRUE)
