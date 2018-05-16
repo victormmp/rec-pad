@@ -1,0 +1,190 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage{multirow}
+%\usepackage{hyperref}
+\usepackage[table,xcdraw]{xcolor}
+%\usepackage{caption}
+%\usepackage{subcaption}
+%\usepackege[nogin]{sweave}
+
+
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\begin{center}
+{\huge KMeans}
+
+{\large Victor Marcius Magalhães Pinto}
+\end{center}
+
+\section{Descrição da Tarefa}
+
+O exercício consiste em aplicar o algoritmo \textit{k-Means} para realizar a obtenção de um agrupamento de clusters de features, através da concatenação de gaussianas no espaço. Para tanto, foram criados quatro agrupamentos de clusters, que consistem em distribuições gaussianas bidimensionais.
+
+\section{Execução do Código}
+
+A função k-Means implementada consistem em.
+
+<<echo=F>>=
+rm(list=ls())
+
+library("rgl")
+library("plot3D")
+
+pdfnvar <- function(x,m,K,n) {
+
+  y <- ((1/(sqrt((2*pi)^n*(det(K)))))*exp(-0.5*(t(x-m)%*%(solve(K))%*%(x-m))))
+  return(y)
+  
+}
+
+@
+
+<<echo=T>>=
+kMeans <- function (X, k, maxit) {
+  N <- dim(X)[1]
+  n <- dim(X)[2]
+  
+  seqN <- seq(1,N,1)
+  seqk <- seq(1,k,1)
+  
+  Mc <- matrix(nrow=k, ncol=n)
+  Clustx <-matrix(nrow=N, ncol=1)
+  
+  seqx <- sample(N,k)
+  
+  Mc <- X[seqx,]
+  
+  it <- 1
+  
+  while(it <= maxit){
+    for (i in seqN) {
+      xrep <- matrix(X[i,], nrow=k, ncol=n, byrow=T)
+      vecdist <- rowSums((Mc-xrep)^2)
+      Clustx[i] <- which.min(vecdist)
+    }
+    
+    for (j in seqk) {
+      xj <- which(Clustx==j)
+      Mc[j,] <- colMeans(X[xj,])
+    }
+    it <- it+1
+  }
+  
+  nam <- c("Mc","Clustx")
+  retlist <- list(Mc,Clustx)
+  names(retlist) <- nam
+  
+  return(retlist)
+}
+@
+
+A função é responsável por calcular os centros dos clusters, e de devolver o cluster correspondente de cada uma das amostras, segundo a distribuição de probabilidade correspondente.
+
+Para testarmos o código, realizamos a execução do mesmo para os 4 grupamentos de clusters, variando o desvio padrão de cada um deles, entre 0.3, 0.5 e 0.7, além de variar a quantidade de centros considerados, entre 2, 4 e 8, ou seja, com menos clusters que o considerado, com o número de clusters criados, e com mais clusters do que existentes. A execução foi realizada em loops, e o resultado pode ser visto abaixo.
+
+<<echo=F>>=
+for(SD in c(0.3, 0.5, 0.7)){
+    for (k in c(2,4,8)) {
+        
+        nSamples <- 100
+        # Number of clusters
+        # k <- 2
+        # Max Iteration
+        maxit <- 100
+        
+        xg1 <- matrix(rnorm(nSamples,mean=2,sd=SD),ncol=2)
+        xg2 <- matrix(rnorm(nSamples,mean=4,sd=SD),ncol=2)
+        xg3 <- matrix(rnorm(nSamples,mean=0,sd=SD),ncol=2)
+        xg4 <- matrix(rnorm(nSamples,mean=-2,sd=SD),ncol=2)
+        
+        X <- rbind(xg1,xg2,xg3,xg4)
+        
+        plotLim <- c(-10,10)
+        
+        plot(xg1[,1],xg1[,2],xlim=plotLim,ylim=plotLim)
+        par(new=T)
+        plot(xg2[,1],xg2[,2],xlim=plotLim,ylim=plotLim)
+        par(new=T)
+        plot(xg3[,1],xg3[,2],xlim=plotLim,ylim=plotLim)
+        par(new=T)
+        plot(xg4[,1],xg4[,2],xlim=plotLim,ylim=plotLim)
+        
+        cat("\n>> Centros para k = ", k, "e desvio padrão de ", SD, ".\n\n")
+        McList <- kMeans(X,k,maxit)
+        Mc <- McList$Mc
+        Clustx <- McList$Clustx
+        
+        xCluster1 <- list()
+        
+        for(i in seq(k)) {
+            ici <- which(Clustx == i)
+            xCluster1[[i]] <- ici
+        }
+        
+        colnames(Mc) <- c("x1","x2")
+        
+        linhaNome <- c()
+        for(i in seq(k)) {
+            linhaNome <- c(linhaNome, paste("centro ", i, ":"))
+        }
+        
+        rownames(Mc) <- linhaNome
+        
+        print(Mc)
+    }
+}
+@
+
+Os gráficos dos clusters correspondentes podem ser vistos a seguir.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.3\linewidth]{k2sd03.png}
+\includegraphics[width=0.3\linewidth]{k2sd05.png}
+\includegraphics[width=0.3\linewidth]{k2sd07.png}
+
+\caption{Distribuição dos clusters, e os centros correspondentes para k=2.}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=0.3\linewidth]{k4sd03.png}
+\includegraphics[width=0.3\linewidth]{k4sd05.png}
+\includegraphics[width=0.3\linewidth]{k4sd07.png}
+\caption{Distribuição dos clusters, e os centros correspondentes para k=4.}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=0.3\linewidth]{k8sd03.png}
+\includegraphics[width=0.3\linewidth]{k8sd05.png}
+\includegraphics[width=0.3\linewidth]{k8sd07.png}
+\caption{Distribuição dos clusters, e os centros correspondentes para k=8.}
+\end{figure}
+
+\section{Análise dos Resultados}
+
+Como é possível ver para os gráficos, para o caso onde passamos para a função um k menor do que a quantidade de clusters exixtentes, o algoritmo reconhece como centros os pontos entre os clusters, ou seja, ele agrupa de dois em dois, e reconhece pontos intermediários como sendo os centros de cada um dos clusters.
+
+Para o caso de k=4, ou seja, quando passamos corretamente para o algoritmo a quantidade de centros existentes, considerando a quantidade de clusters, temos que o algoritmo consegue identificar corretamente os centros dos agrupamentos.
+
+No caso onde passamos mais centros do que os agrupamentos existentes, temos centros sendo estabelecidos em pontos próximos, e uma indentificação errônea das amostras, conforme poder ser visto nos plots correspondentes.
+
+Não foi possível identificar nenhuma anomalia de funcionamento do algoritmo caso variemos o desvio padrão das amostras. Ele consegue identificar corretamente os centros para os clusters.
+
+Portanto, podemos concluir que o algoritmo cumpre bem seu propósito de identificar os centros de cada agrupamento de amostras, contanto que não passemos para o mesmo uma quantiadade de centros que devem ser estabelecidos maior do que a separação dos clusters. Para estes casos, os centros extras são calculados próximos aos centros já existentes, sendo, portanto, redundantes.
+
+\end{document}
