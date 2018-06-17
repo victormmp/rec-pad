@@ -5,11 +5,15 @@
 # }
 
 ##################################
-    
+
+getGlobalVariables <- function() {
+    cat(">> Var 1: ", TRAIN_SET_SIZE)
+}
+
 checkAcc <- function(result, correct) {
     
     if (length(result) != length(correct)){
-        cat("[checkAcc Error] Sizes of result and correct are diferent! Please check pparameters.")
+        cat("[checkAcc Error] Sizes of result and correct are diferent! Please check parameters.")
         return(NULL)
     }
     
@@ -26,40 +30,36 @@ checkAcc <- function(result, correct) {
 #################################
 
 splitClasses <- function() {
-    dim_classe <- 10
-    numClasses <- 2
-    numAmostras <- 10
     
+    numAmostras <- nrow(x)
     seqN <- sample(numAmostras)
-    porcAmostTrain <- 0.5
     
-    N <- seqN[1:(porcAmostTrain*numAmostras)]
+    N <- seqN[1:(TRAIN_SET_SIZE*numAmostras)]
     nSamplesTrain <- length(N)
-    n <- seqN[(porcAmostTrain*numAmostras+1):numAmostras]
+    n <- seqN[(TRAIN_SET_SIZE*numAmostras+1):numAmostras]
     nSamplesTest <- length(n)
     
-    xtreino <- c()
-    xtreinoPCA <- c()
-    xtreinoMDS <- c()
-    ytreino <- c()
-    xteste <- c()
-    xtestePCA <- c()
-    xtesteMDS <- c()
-    yteste <- c()
+    xtreino <<- c()
+    xtreinoPCA <<- c()
+    xtreinoMDS <<- c()
+    ytreino <<- c()
+    xteste <<- c()
+    xtestePCA <<- c()
+    xtesteMDS <<- c()
+    yteste <<- c()
     
-    for(r in seq(1,numClasses,numAmostras)) {
-        for(i in N) {
-            xtreino <- rbind(xtreino, (faces[r+i-1,]))
-            xtreinoPCA <- rbind(xtreinoPCA, (facesPCA[r+i-1,]))
-            xtreinoMDS <- rbind(xtreinoMDS, (facesMDS[r+i-1,]))
-            ytreino <- c(ytreino,(y[r+i-1]))
-        }
-        
-        for(i in n) {
-            xteste <- rbind(xteste, (faces[r+i-1,]))
-            xtestePCA <- rbind(xtestePCA, (facesPCA[r+i-1,]))
-            xtesteMDS <- rbind(xtesteMDS, (facesMDS[r+i-1,]))
-            yteste <- c(yteste,(y[r+i-1]))
-        }
+    for(i in N) {
+        xtreino <<- rbind(xtreino, (x[i,]))
+        xtreinoPCA <<- rbind(xtreinoPCA, (xPCA[i,]))
+        xtreinoMDS <<- rbind(xtreinoMDS, (xMDS[i,]))
+        ytreino <<- rbind(ytreino,(y[i,]))
     }
+    
+    for(i in n) {
+        xteste <<- rbind(xteste, (x[i,]))
+        xtestePCA <<- rbind(xtestePCA, (xPCA[i,]))
+        xtesteMDS <<- rbind(xtesteMDS, (xMDS[i,]))
+        yteste <<- rbind(yteste,(y[i,]))
+    }
+    
 }

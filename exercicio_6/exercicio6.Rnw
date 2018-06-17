@@ -63,7 +63,7 @@ Separamos então as amostras de treinamento e teste aleatoriamente, para em segu
 <<echo=T>>=
 MSE <- c()
 
-for (i in 1:10) {
+for (i in 1:1) {
     
     index1 <- sample(length(indexC1))
     index2 <- sample(length(indexC2))
