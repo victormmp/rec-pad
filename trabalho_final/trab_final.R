@@ -138,105 +138,111 @@ resultBayes <- rbind(resultBayesPCA,resultBayesMDS)
 colnames(resultBayes) <- c("Success","Accuracy(%)")
 rownames(resultBayes) <- c("PCA","MDS")
 
-results[["resultsBayes"]] <- resultBayes
+results[["Bayes"]] <- resultBayes
 
 ###########################################
 
 ########## MISTURA DE GAUSSIANAS ##########
-cat(">> Initializing analyse through GMM\n")
-tic("Finished GMM")
+cat(">> Initializing analyse through GMM and PCA\n")
+tic("Finished GMM and PCA")
 
-cat(">>>> Generating indexes... ")
-trainY <- as.numeric(y[,1])
-
-indexC1 <- which(trainY == 1)
-indexC2 <- which(trainY == 2)
-indexC3 <- which(trainY == 3)
-indexC4 <- which(trainY == 4)
-
-index1 <- sample(length(indexC1))
-index2 <- sample(length(indexC2))
-index3 <- sample(length(indexC3))
-index4 <- sample(length(indexC4))
-
-N <- length(index1)
+results[["GMMPCA"]] <- GMM(xPCA, y, "PCA")
 
 toc()
 
-cat(">>>> Generating training and test datasets... ")
-tic("Done")
+cat(">> Initializing analyse through GMM and MDS\n")
+tic("Finished GMM and MDS")
 
-# xPCA <- as.matrix(xPCA)
-
-trainX1 <- xPCA[indexC1[index1[1:(TRAIN_SET_SIZE*length(index1))]],]
-testX1 <- xPCA[indexC1[index1[(TRAIN_SET_SIZE*length(index1) + 1):length(index1)]],]
-
-trainX2 <- xPCA[indexC2[index2[1:(TRAIN_SET_SIZE*length(index2))]],]
-testX2 <- xPCA[indexC2[index2[(TRAIN_SET_SIZE*length(index2) + 1):length(index2)]],]
-
-trainX3 <- xPCA[indexC3[index3[1:(TRAIN_SET_SIZE*length(index3))]],]
-testX3 <- xPCA[indexC3[index3[(TRAIN_SET_SIZE*length(index3) + 1):length(index3)]],]
-
-trainX4 <- xPCA[indexC4[index4[1:(TRAIN_SET_SIZE*length(index4))]],]
-testX4 <- xPCA[indexC4[index4[(TRAIN_SET_SIZE*length(index4) + 1):length(index4)]],]
-
-testX <- rbind(testX1, testX2, testX3, testX4)
-testY <- c(rep(1, dim(testX1)[1]),rep(2,dim(testX2)[1]),rep(3, dim(testX3)[1]),rep(4, dim(testX4)[1]))
-
-# testX <- as.matrix(testX)
+results[["GMMMDS"]] <- GMM(xMDS, y, "MDS")
 
 toc()
 
-cat(">>>> Creating model and calculating probabilities... \n")
-tic("Done")
-
-model1 <- densityMclust(trainX1)
-model2 <- densityMclust(trainX2)
-model3 <- densityMclust(trainX3)
-model4 <- densityMclust(trainX4)
-
-PxC1 <- dens(modelName=model1$modelName, 
-             data = testX, 
-             parameters = model1$parameters)
-
-PxC2 <- dens(modelName=model2$modelName, 
-             data = testX, 
-             parameters = model2$parameters)
-
-PxC3 <- dens(modelName=model3$modelName, 
-             data = testX, 
-             parameters = model3$parameters)
-
-PxC4 <- dens(modelName=model4$modelName, 
-             data = testX, 
-             parameters = model4$parameters)
-
-PC1 = length(trainX1) / (length(trainX1) + length(trainX2) + length(trainX3) + length(trainX4))
-PC2 = length(trainX2) / (length(trainX1) + length(trainX2) + length(trainX3) + length(trainX4))
-PC3 = length(trainX3) / (length(trainX1) + length(trainX2) + length(trainX3) + length(trainX4))
-PC4 = length(trainX4) / (length(trainX1) + length(trainX2) + length(trainX3) + length(trainX4))
+plotBar(results)
+plot(results$KNNPCA[,1],results$KNNPCA[,2],xlab="Valor de K", ylab="Precisão (%)",main="KNN e PCA")
+plot(results$KNNMDS[,1],results$KNNMDS[,2],xlab="Valor de K", ylab="Precisão (%)",main="KNN e MDS")
 
 toc()
 
-cat(">>>> Classificating... ")
-tic("Done")
+trainY <- as.numeric(ytreino[,3])
 
-result <- c()
-PxC <- matrix(,nrow = nrow(testX), ncol = 4)
-for (j in 1:dim(testX)[1]) {
-    
-    PxC[j,1] <- PxC1[j] * PC1
-    PxC[j,2] <- PxC2[j] * PC2
-    PxC[j,3] <- PxC3[j] * PC3
-    PxC[j,4] <- PxC4[j] * PC4
+SDPCA <- matrix(nrow=10, ncol = 12)
+SDMDS <- matrix(nrow=10, ncol = 12)
+rownames(SDPCA) <- c("Classe1", "Classe2","Classe3","Classe4","Classe5","Classe6","Classe7","Classe8","Classe9","Classe10")
+rownames(SDMDS) <- c("Classe1", "Classe2","Classe3","Classe4","Classe5","Classe6","Classe7","Classe8","Classe9","Classe10")
+
+colnames(SDPCA) <- c("PCA1","PCA2","PCA3","PCA4","PCA5","PCA6","PCA7","PCA8","PCA9","PCA10","PCA11","PCA12")
+colnames(SDMDS) <- c("MDS1","MDS2","MDS3","MDS4","MDS5","MDS6","MDS7","MDS8","MDS9","MDS10","MDS11","MDS12")
+
+MeanPCA <- matrix(nrow=10, ncol = 12)
+MeanMDS <- matrix(nrow=10, ncol = 12)
+rownames(MeanPCA) <- c("Classe1", "Classe2","Classe3","Classe4","Classe5","Classe6","Classe7","Classe8","Classe9","Classe10")
+rownames(MeanMDS) <- c("Classe1", "Classe2","Classe3","Classe4","Classe5","Classe6","Classe7","Classe8","Classe9","Classe10")
+
+colnames(MeanPCA) <- c("PCA1","PCA2","PCA3","PCA4","PCA5","PCA6","PCA7","PCA8","PCA9","PCA10","PCA11","PCA12")
+colnames(MeanMDS) <- c("MDS1","MDS2","MDS3","MDS4","MDS5","MDS6","MDS7","MDS8","MDS9","MDS10","MDS11","MDS12")
+
+for (j in 1:12) {
+    for(i in 1:10) {
+        
+        SDPCA[i,j] <-sd(xtreinoPCA[which(trainY == i),j])
+        SDMDS[i,j] <-sd(xtreinoMDS[which(trainY == i),j])
+    }
+   
 }
 
-trainResult <- max.col(PxC)
-resultGMM <- matrix(checkAcc(testY, trainResult), ncol=2)
-colnames(resultGMM) <- c("Success","Accuracy(%)")
+for (j in 1:12) {
+    for(i in 1:10) {
+        
+        MeanPCA[i,j] <-mean(xtreinoPCA[which(trainY == i),j])
+        MeanMDS[i,j] <-mean(xtreinoMDS[which(trainY == i),j])
+    }
+    
+}
 
-results[["Result GMM"]] <- resultGMM
+print(t(MeanPCA))
+print(t(MeanMDS))
+print(t(SDPCA))
+print(t(SDMDS))
 
-toc()
-toc()
-toc()
+#########################################################
+
+trainY <- as.numeric(ytreino[,1])
+
+SDPCA <- matrix(nrow=4, ncol = 12)
+SDMDS <- matrix(nrow=4, ncol = 12)
+rownames(SDPCA) <- c("Classe1", "Classe2","Classe3","Classe4")
+rownames(SDMDS) <- c("Classe1", "Classe2","Classe3","Classe4")
+
+colnames(SDPCA) <- c("PCA1","PCA2","PCA3","PCA4","PCA5","PCA6","PCA7","PCA8","PCA9","PCA10","PCA11","PCA12")
+colnames(SDMDS) <- c("MDS1","MDS2","MDS3","MDS4","MDS5","MDS6","MDS7","MDS8","MDS9","MDS10","MDS11","MDS12")
+
+MeanPCA <- matrix(nrow=4, ncol = 12)
+MeanMDS <- matrix(nrow=4, ncol = 12)
+rownames(MeanPCA) <- c("Classe1", "Classe2","Classe3","Classe4")
+rownames(MeanMDS) <- c("Classe1", "Classe2","Classe3","Classe4")
+
+colnames(MeanPCA) <- c("PCA1","PCA2","PCA3","PCA4","PCA5","PCA6","PCA7","PCA8","PCA9","PCA10","PCA11","PCA12")
+colnames(MeanMDS) <- c("MDS1","MDS2","MDS3","MDS4","MDS5","MDS6","MDS7","MDS8","MDS9","MDS10","MDS11","MDS12")
+
+for (j in 1:12) {
+    for(i in 1:4) {
+        
+        SDPCA[i,j] <-sd(xtreinoPCA[which(trainY == i),j])
+        SDMDS[i,j] <-sd(xtreinoMDS[which(trainY == i),j])
+    }
+    
+}
+
+for (j in 1:12) {
+    for(i in 1:4) {
+        
+        MeanPCA[i,j] <-mean(xtreinoPCA[which(trainY == i),j])
+        MeanMDS[i,j] <-mean(xtreinoMDS[which(trainY == i),j])
+    }
+    
+}
+
+print(t(MeanPCA))
+print(t(MeanMDS))
+print(t(SDPCA))
+print(t(SDMDS))
